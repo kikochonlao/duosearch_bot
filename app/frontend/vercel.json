@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "https://duosearch-api.onrender.com/api/$1" }
+  ]
+}

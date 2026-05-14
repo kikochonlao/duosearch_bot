@@ -1,0 +1,16 @@
+from sqlalchemy import ForeignKey, UniqueConstraint
+from sqlalchemy.orm import Mapped, mapped_column
+from db.base import Base
+from datetime import datetime
+from sqlalchemy import DateTime, func
+
+
+class Match(Base):
+    __tablename__ = "matches"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    user1_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    user2_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
