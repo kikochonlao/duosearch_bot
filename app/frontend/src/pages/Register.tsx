@@ -7,21 +7,21 @@ interface Props {
 }
 
 const REGIONS = [
-  { key: 'cis', label: 'CIS' },
-  { key: 'eu', label: 'Europe' },
-  { key: 'na', label: 'North America' },
-  { key: 'asia', label: 'Asia' },
-  { key: 'sa', label: 'South America' },
-  { key: 'oce', label: 'Oceania' },
+  { key: 'cis', label: 'CIS', flag: '🌍' },
+  { key: 'eu', label: 'Europe', flag: '🇪🇺' },
+  { key: 'na', label: 'North America', flag: '🇺🇸' },
+  { key: 'asia', label: 'Asia', flag: '🌏' },
+  { key: 'sa', label: 'South America', flag: '🌎' },
+  { key: 'oce', label: 'Oceania', flag: '🇦🇺' },
 ]
 
 const LANGUAGES = [
-  { key: 'ru', label: 'Русский' },
-  { key: 'en', label: 'English' },
-  { key: 'uk', label: 'Українська' },
-  { key: 'kz', label: 'Қазақша' },
-  { key: 'by', label: 'Беларуская' },
-  { key: 'uz', label: "O'zbek" },
+  { key: 'ru', label: 'Русский', flag: '🇷🇺' },
+  { key: 'en', label: 'English', flag: '🇬🇧' },
+  { key: 'uk', label: 'Українська', flag: '🇺🇦' },
+  { key: 'kz', label: 'Қазақша', flag: '🇰🇿' },
+  { key: 'by', label: 'Беларуская', flag: '🇧🇾' },
+  { key: 'uz', label: "O'zbek", flag: '🇺🇿' },
 ]
 
 export default function Register({ user }: Props) {
@@ -29,19 +29,16 @@ export default function Register({ user }: Props) {
   const [step, setStep] = useState(0)
   const [gamesData, setGamesData] = useState<GameInfo[]>([])
   const [profile, setProfile] = useState({
-    username: user?.username || '',
-    name: '',
+    name: user?.username || '',
     age: 18,
-    gender: 'M',
+    gender: 'M' as string,
     language: 'ru',
     region: 'cis',
-    looking_for: 'any',
     games: {} as Record<string, { rank?: string; roles: Record<string, string> }>,
   })
   const [selectedGames, setSelectedGames] = useState<string[]>([])
   const [currentGameIdx, setCurrentGameIdx] = useState(0)
   const [selectedRoles, setSelectedRoles] = useState<string[]>([])
-  const [selectedRank, setSelectedRank] = useState('')
   const [roleRanks, setRoleRanks] = useState<Record<string, string>>({})
   const [saving, setSaving] = useState(false)
 
@@ -51,154 +48,156 @@ export default function Register({ user }: Props) {
 
   const currentGame = gamesData.find(g => g.key === selectedGames[currentGameIdx])
 
-  const steps = [
-    // 0: Name & Age & Gender
+  const handleNext = async () => {
+    if (step >= steps.length - 1) {
+      setSaving(true)
+      try {
+        await api.createProfile({
+          name: profile.name,
+          age: profile.age,
+          gender: profile.gender,
+          language: profile.language || 'ru',
+          region: profile.region,
+          games: profile.games,
+        })
+        navigate('/discover')
+      } catch (e: any) {
+        alert(e.message)
+      } finally { setSaving(false) }
+    } else {
+      setStep(s => s + 1)
+    }
+  }
+
+  const steps: { title: string; subtitle: string; render: () => JSX.Element }[] = [
     {
       title: 'Tell us about yourself',
+      subtitle: 'Let\'s start with the basics',
       render: () => (
         <>
-          <Input label="Your name" value={profile.name} onChange={v => setProfile(p => ({ ...p, name: v }))} placeholder="Enter your name" />
-          <div style={{ marginTop: 12 }}>
-            <label style={{ fontSize: '13px', color: '#8e9eab', marginBottom: '4px', display: 'block' }}>Age</label>
-            <input type="number" min={14} max={99} value={profile.age}
-              onChange={e => setProfile(p => ({ ...p, age: parseInt(e.target.value) || 14 }))}
-              style={inputStyle} />
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ fontSize: 13, color: 'var(--tg-hint)', marginBottom: 6, display: 'block' }}>Your name</label>
+            <input className="input-field" value={profile.name} onChange={e => setProfile(p => ({ ...p, name: e.target.value }))} placeholder="Enter your name" />
           </div>
-          <div style={{ marginTop: 12 }}>
-            <label style={{ fontSize: '13px', color: '#8e9eab', marginBottom: '4px', display: 'block' }}>Gender</label>
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ fontSize: 13, color: 'var(--tg-hint)', marginBottom: 6, display: 'block' }}>Age</label>
+            <input className="input-field" type="number" min={14} max={99} value={profile.age} onChange={e => setProfile(p => ({ ...p, age: parseInt(e.target.value) || 14 }))} />
+          </div>
+          <div>
+            <label style={{ fontSize: 13, color: 'var(--tg-hint)', marginBottom: 8, display: 'block' }}>Gender</label>
             <div style={{ display: 'flex', gap: 8 }}>
-              <Chip selected={profile.gender === 'M'} onClick={() => setProfile(p => ({ ...p, gender: 'M' }))}>Male</Chip>
-              <Chip selected={profile.gender === 'F'} onClick={() => setProfile(p => ({ ...p, gender: 'F' }))}>Female</Chip>
+              {['M', 'F'].map(g => (
+                <button key={g} className={`chip ${profile.gender === g ? 'active' : ''}`} onClick={() => setProfile(p => ({ ...p, gender: g }))}
+                  style={{ flex: 1, justifyContent: 'center', padding: '12px 0' }}>
+                  {g === 'M' ? '♂️ Male' : '♀️ Female'}
+                </button>
+              ))}
             </div>
           </div>
         </>
       ),
     },
-    // 1: Language & Region
     {
       title: 'Language & Region',
+      subtitle: 'Help us find people near you',
       render: () => (
         <>
-          <label style={{ fontSize: '13px', color: '#8e9eab', marginBottom: '8px', display: 'block' }}>Languages you speak</label>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 20 }}>
+          <label style={{ fontSize: 13, color: 'var(--tg-hint)', marginBottom: 8, display: 'block' }}>Languages you speak</label>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 24 }}>
             {LANGUAGES.map(l => (
-              <Chip key={l.key} selected={profile.language.includes(l.key)}
-                onClick={() => setProfile(p => ({ ...p, language: p.language === l.key ? '' : l.key }))}>
-                {l.label}
-              </Chip>
+              <button key={l.key} className={`chip ${profile.language === l.key ? 'active' : ''}`}
+                onClick={() => setProfile(p => ({ ...p, language: l.key }))}>
+                {l.flag} {l.label}
+              </button>
             ))}
           </div>
-
-          <label style={{ fontSize: '13px', color: '#8e9eab', marginBottom: '8px', display: 'block' }}>Region</label>
+          <label style={{ fontSize: 13, color: 'var(--tg-hint)', marginBottom: 8, display: 'block' }}>Region</label>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
             {REGIONS.map(r => (
-              <Chip key={r.key} selected={profile.region === r.key}
+              <button key={r.key} className={`chip ${profile.region === r.key ? 'active' : ''}`}
                 onClick={() => setProfile(p => ({ ...p, region: r.key }))}>
-                {r.label}
-              </Chip>
+                {r.flag} {r.label}
+              </button>
             ))}
           </div>
         </>
       ),
     },
-    // 2: Select games
     {
       title: 'Choose your games',
+      subtitle: 'Select at least one game',
       render: () => (
         <>
-          <p style={{ color: '#8e9eab', fontSize: '14px', marginBottom: '12px' }}>
-            Select at least one game you play
-          </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
             {gamesData.map(g => (
-              <Chip key={g.key} selected={selectedGames.includes(g.key)}
-                onClick={() => {
-                  setSelectedGames(prev =>
-                    prev.includes(g.key) ? prev.filter(k => k !== g.key) : [...prev, g.key]
-                  )
-                }}>
+              <button key={g.key} className={`chip ${selectedGames.includes(g.key) ? 'active' : ''}`}
+                onClick={() => setSelectedGames(prev => prev.includes(g.key) ? prev.filter(k => k !== g.key) : [...prev, g.key])}>
                 {g.display}
-              </Chip>
+              </button>
             ))}
           </div>
+          <p style={{ color: 'var(--tg-hint)', fontSize: 13, marginTop: 12 }}>
+            {selectedGames.length} game{selectedGames.length !== 1 ? 's' : ''} selected
+          </p>
         </>
       ),
     },
-    // 3+: Game-specific (roles, ranks)
-    ...(selectedGames.map((gameKey, idx) => {
+    ...selectedGames.map((gameKey, idx) => {
       const game = gamesData.find(g => g.key === gameKey)
-      if (!game) return null
+      if (!game) return { title: '', subtitle: '', render: () => null }
       return {
-        title: `${game.display} — Rank & Roles`,
+        title: `${game.display}`,
+        subtitle: 'Set your rank and roles',
         render: () => {
+          const gp = profile.games[gameKey] || { roles: {} }
           if (!game.has_roles) {
             return (
-              <>
-                <p style={{ color: '#8e9eab', fontSize: '14px', marginBottom: '12px' }}>
-                  Select your rank in {game.display}
-                </p>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                  {game.ranks.map(r => (
-                    <Chip key={r} selected={profile.games[gameKey]?.rank === r}
-                      onClick={() => setProfile(p => ({
-                        ...p, games: { ...p.games, [gameKey]: { ...p.games[gameKey], rank: r } }
-                      }))}>
-                      {r}
-                    </Chip>
-                  ))}
-                </div>
-              </>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                {game.ranks.map(r => (
+                  <button key={r} className={`chip ${gp.rank === r ? 'active' : ''}`}
+                    onClick={() => setProfile(p => ({ ...p, games: { ...p.games, [gameKey]: { ...gp, rank: r } } }))}>
+                    {r}
+                  </button>
+                ))}
+              </div>
             )
           }
-
           if (!game.rank_per_role) {
             return (
               <>
-                <p style={{ color: '#8e9eab', fontSize: '14px', marginBottom: '8px' }}>
-                  Select your roles in {game.display}
-                </p>
+                <label style={{ fontSize: 13, color: 'var(--tg-hint)', marginBottom: 8, display: 'block' }}>Roles</label>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16 }}>
                   {game.roles.map(r => (
-                    <Chip key={r} selected={selectedRoles.includes(r)}
-                      onClick={() => setSelectedRoles(prev =>
-                        prev.includes(r) ? prev.filter(x => x !== r) : [...prev, r]
-                      )}>
+                    <button key={r} className={`chip ${selectedRoles.includes(r) ? 'active' : ''}`}
+                      onClick={() => setSelectedRoles(prev => prev.includes(r) ? prev.filter(x => x !== r) : [...prev, r])}>
                       {r}
-                    </Chip>
+                    </button>
                   ))}
                 </div>
-                <p style={{ color: '#8e9eab', fontSize: '14px', marginBottom: '8px' }}>
-                  Your rank (applies to all roles)
-                </p>
+                <label style={{ fontSize: 13, color: 'var(--tg-hint)', marginBottom: 8, display: 'block' }}>Rank</label>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                   {game.ranks.map(r => (
-                    <Chip key={r} selected={profile.games[gameKey]?.rank === r}
-                      onClick={() => setProfile(p => ({
-                        ...p, games: { ...p.games, [gameKey]: { ...p.games[gameKey], rank: r, roles: Object.fromEntries(selectedRoles.map(sr => [sr, r])) } }
-                      }))}>
+                    <button key={r} className={`chip ${gp.rank === r ? 'active' : ''}`}
+                      onClick={() => {
+                        setProfile(p => ({ ...p, games: { ...p.games, [gameKey]: { rank: r, roles: Object.fromEntries(selectedRoles.map(sr => [sr, r])) } } }))
+                      }}>
                       {r}
-                    </Chip>
+                    </button>
                   ))}
                 </div>
               </>
             )
           }
-
           return (
             <>
-              <p style={{ color: '#8e9eab', fontSize: '14px', marginBottom: '8px' }}>
-                Select roles and ranks in {game.display}
-              </p>
               {game.roles.map(role => (
                 <div key={role} style={{ marginBottom: 12 }}>
-                  <label style={{ fontSize: '13px', color: '#8e9eab', marginBottom: '4px', display: 'block' }}>{role}</label>
-                  <select value={roleRanks[role] || ''} onChange={e => {
-                    const newRR = { ...roleRanks, [role]: e.target.value }
-                    setRoleRanks(newRR)
-                    setProfile(p => ({
-                      ...p, games: { ...p.games, [gameKey]: { ...p.games[gameKey], roles: newRR, rank: '' } }
-                    }))
-                  }} style={{ ...inputStyle, marginBottom: 0 }}>
+                  <label style={{ fontSize: 13, color: 'var(--tg-hint)', marginBottom: 6, display: 'block' }}>{role}</label>
+                  <select className="input-field" value={roleRanks[role] || ''} onChange={e => {
+                    const rr = { ...roleRanks, [role]: e.target.value }
+                    setRoleRanks(rr)
+                    setProfile(p => ({ ...p, games: { ...p.games, [gameKey]: { rank: '', roles: rr } } }))
+                  }}>
                     <option value="">Select rank</option>
                     {game.ranks.map(r => <option key={r} value={r}>{r}</option>)}
                   </select>
@@ -208,89 +207,41 @@ export default function Register({ user }: Props) {
           )
         }
       }
-    }).filter(Boolean)),
+    }).filter(Boolean) as { title: string; subtitle: string; render: () => JSX.Element }[],
   ]
 
-  const validSteps = steps.filter(Boolean) as { title: string; render: () => JSX.Element }[]
-  const isLastStep = step >= validSteps.length - 1
-
-  const handleNext = async () => {
-    if (isLastStep) {
-      setSaving(true)
-      try {
-        await api.createProfile({
-          name: profile.name,
-          age: profile.age,
-          gender: profile.gender,
-          language: profile.language || 'ru',
-          region: profile.region,
-          looking_for: profile.looking_for,
-          games: profile.games,
-        })
-        navigate('/discover')
-      } catch (e: any) {
-        alert(e.message)
-      } finally {
-        setSaving(false)
-      }
-    } else {
-      setStep(s => s + 1)
-    }
-  }
+  const isLast = step >= steps.length - 1
 
   return (
-    <div style={{ padding: '24px 16px 100px' }}>
+    <div className="page">
       <div style={{ display: 'flex', gap: 4, marginBottom: 24 }}>
-        {validSteps.map((_, i) => (
+        {steps.map((_, i) => (
           <div key={i} style={{
-            flex: 1, height: 3, borderRadius: 2,
-            backgroundColor: i <= step ? '#2ea6ff' : '#2b3b4a',
+            flex: 1, height: 3, borderRadius: 2, transition: 'all 0.3s',
+            background: i <= step ? 'var(--tg-button)' : 'var(--tg-border)',
+            opacity: i <= step ? 1 : 0.4,
           }} />
         ))}
       </div>
 
-      <h2 style={{ fontSize: '22px', fontWeight: 'bold', marginBottom: '20px' }}>
-        {validSteps[step]?.title}
-      </h2>
+      <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 4 }}>{steps[step]?.title}</h2>
+      <p style={{ color: 'var(--tg-hint)', fontSize: 14, marginBottom: 24 }}>{steps[step]?.subtitle}</p>
 
-      {validSteps[step]?.render()}
+      <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
+        {steps[step]?.render()}
+      </div>
 
-      <button onClick={handleNext} disabled={saving} style={{
-        ...btnStyle, marginTop: 32, opacity: saving ? 0.6 : 1,
-      }}>
-        {saving ? 'Saving...' : isLastStep ? 'Complete' : 'Next'}
-      </button>
+      <div style={{ display: 'flex', gap: 12, marginTop: 32 }}>
+        {step > 0 && (
+          <button className="btn-secondary" onClick={() => setStep(s => s - 1)} style={{ flex: step > 0 ? 0.3 : 0 }}>
+            ← Back
+          </button>
+        )}
+        <button className="btn-primary" onClick={handleNext} disabled={saving}
+          style={{ flex: 1 }}>
+          {saving ? 'Saving...' : isLast ? '🎉 Complete' : 'Continue →'}
+        </button>
+      </div>
     </div>
-  )
-}
-
-const inputStyle: React.CSSProperties = {
-  width: '100%', padding: '12px 14px', borderRadius: '10px', border: '1px solid #2b3b4a',
-  backgroundColor: '#1f2a36', color: '#fff', fontSize: '16px', outline: 'none',
-}
-
-const btnStyle: React.CSSProperties = {
-  width: '100%', padding: '14px', borderRadius: '12px', border: 'none',
-  backgroundColor: '#2ea6ff', color: '#fff', fontSize: '17px', fontWeight: 600, cursor: 'pointer',
-}
-
-function Input({ label, value, onChange, placeholder }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string }) {
-  return (
-    <div>
-      <label style={{ fontSize: '13px', color: '#8e9eab', marginBottom: '4px', display: 'block' }}>{label}</label>
-      <input value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} style={inputStyle} />
-    </div>
-  )
-}
-
-function Chip({ selected, onClick, children }: { selected: boolean; onClick: () => void; children: React.ReactNode }) {
-  return (
-    <button onClick={onClick} style={{
-      padding: '8px 14px', borderRadius: '20px', border: selected ? '2px solid #2ea6ff' : '1px solid #2b3b4a',
-      backgroundColor: selected ? 'rgba(46,166,255,0.15)' : 'transparent',
-      color: selected ? '#2ea6ff' : '#8e9eab', fontSize: '13px', cursor: 'pointer',
-    }}>
-      {children}
-    </button>
   )
 }

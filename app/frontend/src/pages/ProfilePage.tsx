@@ -13,10 +13,7 @@ export default function ProfilePage({ user }: Props) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    Promise.all([
-      api.getProfile(),
-      api.getGames(),
-    ]).then(([p, g]) => {
+    Promise.all([api.getProfile(), api.getGames()]).then(([p, g]) => {
       setProfile(p)
       setGames(g.games)
       setLoading(false)
@@ -24,49 +21,47 @@ export default function ProfilePage({ user }: Props) {
   }, [])
 
   if (loading) {
-    return <div style={{ textAlign: 'center', paddingTop: '40vh', color: '#8e9eab' }}>Loading profile...</div>
+    return <div className="page"><div className="skeleton" style={{ height: 200, borderRadius: 16 }} /></div>
   }
 
   if (!profile) {
     return (
-      <div style={{ textAlign: 'center', paddingTop: '30vh' }}>
-        <p style={{ color: '#8e9eab', marginBottom: 16 }}>Profile not found. Please register first.</p>
-        <button onClick={() => navigate('/register')}
-          style={{ ...btnStyle, maxWidth: '200px', margin: '0 auto' }}>Register</button>
+      <div className="page" style={{ textAlign: 'center', paddingTop: '30vh' }}>
+        <p style={{ color: 'var(--tg-hint)', marginBottom: 16 }}>Please register first</p>
+        <button className="btn-primary" onClick={() => navigate('/register')} style={{ maxWidth: 200, margin: '0 auto' }}>
+          Register
+        </button>
       </div>
     )
   }
 
   return (
-    <div style={{ padding: '24px 16px 100px' }}>
-      <div style={{ textAlign: 'center', marginBottom: 24 }}>
-        <div style={{
-          width: 80, height: 80, borderRadius: '50%', backgroundColor: '#2b3b4a',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: '32px', margin: '0 auto 12px',
-        }}>
+    <div className="page">
+      <div className="card" style={{ textAlign: 'center', padding: '24px 16px' }}>
+        <div className="avatar lg" style={{ margin: '0 auto 12px', background: 'color-mix(in srgb, var(--tg-button) 20%, var(--tg-section-bg))', color: 'var(--tg-button)' }}>
           {profile.name[0].toUpperCase()}
         </div>
-        <h2 style={{ fontSize: '24px', marginBottom: '4px' }}>{profile.name}, {profile.age}</h2>
-        <p style={{ color: '#8e9eab', fontSize: '14px' }}>
-          {profile.gender === 'M' ? 'Male' : 'Female'} · {profile.language} · {profile.region.toUpperCase()}
+        <h2 style={{ fontSize: 22, fontWeight: 700 }}>{profile.name}, {profile.age}</h2>
+        <p style={{ color: 'var(--tg-hint)', fontSize: 14, marginTop: 4 }}>
+          {profile.gender === 'M' ? '♂️ Male' : '♀️ Female'} · {profile.language} · {profile.region.toUpperCase()}
         </p>
       </div>
 
-      <div style={{ marginBottom: 20 }}>
-        <h3 style={{ fontSize: '16px', marginBottom: '12px', color: '#8e9eab' }}>Games</h3>
+      <div style={{ marginTop: 20 }}>
+        <p className="section-title">Games</p>
         {Object.entries(profile.games).map(([gk, gp]) => {
           const gInfo = games.find(g => g.key === gk)
           return (
-            <div key={gk} style={{
-              backgroundColor: '#1f2a36', borderRadius: '12px', padding: '12px 16px',
-              marginBottom: 8,
-            }}>
-              <div style={{ fontWeight: 600, marginBottom: 4 }}>{gInfo?.display || gk}</div>
-              {gp.rank && <div style={{ color: '#8e9eab', fontSize: '13px' }}>Rank: {gp.rank}</div>}
+            <div key={gk} className="card" style={{ marginBottom: 8 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontWeight: 600 }}>{gInfo?.display || gk}</span>
+                {gp.rank && <span className="badge rank">{gp.rank}</span>}
+              </div>
               {Object.entries(gp.roles).length > 0 && (
-                <div style={{ color: '#8e9eab', fontSize: '13px' }}>
-                  Roles: {Object.entries(gp.roles).map(([r, rk]) => `${r} (${rk})`).join(', ')}
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 8 }}>
+                  {Object.entries(gp.roles).map(([role, rank]) => (
+                    <span key={role} className="badge game">{role}: {rank}</span>
+                  ))}
                 </div>
               )}
             </div>
@@ -74,14 +69,9 @@ export default function ProfilePage({ user }: Props) {
         })}
       </div>
 
-      <button onClick={() => navigate('/profile/edit')} style={btnStyle}>
-        Edit Profile
+      <button className="btn-primary" onClick={() => navigate('/profile/edit')} style={{ marginTop: 20 }}>
+        ✏️ Edit Profile
       </button>
     </div>
   )
-}
-
-const btnStyle: React.CSSProperties = {
-  width: '100%', padding: '14px', borderRadius: '12px', border: 'none',
-  backgroundColor: '#2ea6ff', color: '#fff', fontSize: '17px', fontWeight: 600, cursor: 'pointer',
 }

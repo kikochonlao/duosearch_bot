@@ -12,44 +12,35 @@ export default function ChatList({ user }: Props) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    api.getChatSessions().then(data => {
-      setSessions(data)
-      setLoading(false)
-    }).catch(() => setLoading(false))
+    api.getChatSessions().then(data => { setSessions(data); setLoading(false) })
+      .catch(() => setLoading(false))
   }, [])
 
   if (loading) {
-    return <div style={{ textAlign: 'center', paddingTop: '40vh', color: '#8e9eab' }}>Loading chats...</div>
+    return <div className="page">{[1,2,3].map(i => <div key={i} className="skeleton" style={{ height: 64, borderRadius: 12, marginBottom: 8 }} />)}</div>
   }
 
   return (
-    <div style={{ padding: '24px 16px 100px' }}>
-      <h2 style={{ fontSize: '22px', fontWeight: 'bold', marginBottom: '20px' }}>Chats</h2>
+    <div className="page">
+      <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 20 }}>Chats</h2>
 
       {sessions.length === 0 && (
-        <div style={{ textAlign: 'center', paddingTop: '40px' }}>
-          <div style={{ fontSize: '48px', marginBottom: '12px' }}>💬</div>
-          <p style={{ color: '#8e9eab' }}>No active chats. Match with someone to start chatting!</p>
+        <div style={{ textAlign: 'center', paddingTop: 60, color: 'var(--tg-hint)' }}>
+          <div style={{ fontSize: 48, marginBottom: 12 }}>💬</div>
+          <p>No chats yet. Match with someone!</p>
         </div>
       )}
 
       {sessions.map(s => (
-        <div key={s.id} onClick={() => navigate(`/chat/${s.match_id}`)} style={{
-          display: 'flex', alignItems: 'center', gap: 12, padding: '12px',
-          backgroundColor: '#1f2a36', borderRadius: '12px', marginBottom: 8, cursor: 'pointer', 
-          opacity: s.is_active ? 1 : 0.6,
-        }}>
-          <div style={{
-            width: 48, height: 48, borderRadius: '50%', backgroundColor: '#2b3b4a',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px',
-            flexShrink: 0,
-          }}>
+        <div key={s.id} className="list-item" onClick={() => navigate(`/chat/${s.match_id}`)}
+          style={{ opacity: s.is_active ? 1 : 0.5 }}>
+          <div className="avatar">
             {s.other_user.name[0].toUpperCase()}
           </div>
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 600 }}>{s.other_user.name}</div>
-            <div style={{ color: '#8e9eab', fontSize: '13px' }}>
-              {s.is_active ? 'Active' : 'Closed'}
+            <div style={{ color: 'var(--tg-hint)', fontSize: 13 }}>
+              {s.is_active ? 'Active now' : 'Chat closed'}
             </div>
           </div>
         </div>

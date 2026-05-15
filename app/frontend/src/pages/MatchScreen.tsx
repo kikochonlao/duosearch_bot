@@ -10,26 +10,22 @@ export default function MatchScreen({ user }: Props) {
 
   return (
     <div style={{
-      display: 'flex', flexDirection: 'column', alignItems: 'center',
-      justifyContent: 'center', minHeight: '80vh', textAlign: 'center', padding: '24px'
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+      minHeight: '80vh', padding: 24, textAlign: 'center',
+      background: 'radial-gradient(ellipse at center, color-mix(in srgb, var(--tg-success) 20%, transparent), transparent)',
     }}>
-      <div style={{ fontSize: '80px', marginBottom: '16px' }}>🎉</div>
-      <h2 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '8px' }}>It's a Match!</h2>
-      <p style={{ color: '#8e9eab', marginBottom: '40px', fontSize: '15px' }}>
-        You and your teammate liked each other!
+      <div style={{ fontSize: 100, marginBottom: 16, animation: 'matchPulse 0.8s ease-out' }}>🎉</div>
+      <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 4, animation: 'slideUp 0.5s ease-out 0.2s both' }}>
+        It's a Match!
+      </h2>
+      <p style={{ color: 'var(--tg-hint)', marginBottom: 40, animation: 'slideUp 0.5s ease-out 0.3s both' }}>
+        Start chatting with your new teammate!
       </p>
-      <button onClick={() => navigate(`/chat/${matchId}`)} style={{
-        width: '100%', maxWidth: '280px', padding: '14px', borderRadius: '12px',
-        border: 'none', backgroundColor: '#2ea6ff', color: '#fff',
-        fontSize: '17px', fontWeight: 600, cursor: 'pointer', marginBottom: 12,
-      }}>
-        Send a message
+      <button className="btn-primary" onClick={() => navigate(`/chat/${matchId}`)}
+        style={{ maxWidth: 280, marginBottom: 12, animation: 'slideUp 0.5s ease-out 0.4s both' }}>
+        💬 Send a message
       </button>
-      <button onClick={() => navigate('/discover')} style={{
-        width: '100%', maxWidth: '280px', padding: '14px', borderRadius: '12px',
-        border: '1px solid #2b3b4a', backgroundColor: 'transparent', color: '#8e9eab',
-        fontSize: '17px', cursor: 'pointer',
-      }}>
+      <button className="btn-secondary" onClick={() => navigate('/discover')} style={{ maxWidth: 280, animation: 'slideUp 0.5s ease-out 0.5s both' }}>
         Keep browsing
       </button>
     </div>
