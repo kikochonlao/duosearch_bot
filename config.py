@@ -17,8 +17,12 @@ class Settings(BaseModel):
 
 
 settings = Settings(
-    BOT_TOKEN=os.getenv("BOT_TOKEN"),
-    DATABASE_URL=os.getenv("DATABASE_URL"),
+    BOT_TOKEN=os.getenv("BOT_TOKEN", ""),
+    DATABASE_URL=os.getenv("DATABASE_URL", "sqlite+aiosqlite:///db.sqlite3"),
     ADMIN_IDS=os.getenv("ADMIN_IDS", ""),
     ECHO_SQL=os.getenv("ECHO_SQL", "false").lower() in ("1", "true", "yes"),
 )
+
+# Ensure async DSN for PostgreSQL
+if settings.DATABASE_URL.startswith("postgresql://") and "+asyncpg" not in settings.DATABASE_URL:
+    settings.DATABASE_URL = settings.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
