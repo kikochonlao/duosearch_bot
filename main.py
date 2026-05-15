@@ -1,6 +1,5 @@
 import asyncio
 import logging
-from logging.handlers import RotatingFileHandler
 
 from aiogram import Bot, Dispatcher
 
@@ -15,34 +14,14 @@ from handlers.errors import on_error
 
 from keyboards import games, ranks, roles  # noqa: F401
 
-# Console handler
-console_handler = logging.StreamHandler()
-console_handler.setFormatter(
-    logging.Formatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s")
-)
-
-# File handler with rotation (10 MB, 5 backups)
-file_handler = RotatingFileHandler(
-    "bot.log",
-    maxBytes=10 * 1024 * 1024,
-    backupCount=5,
-    encoding="utf-8",
-)
-file_handler.setFormatter(
-    logging.Formatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s")
-)
-
-logging.basicConfig(
-    level=logging.INFO,
-    handlers=[console_handler, file_handler],
-)
-
 logger = logging.getLogger("duosearch")
-logging.getLogger("aiogram.event").setLevel(logging.INFO)
-logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
 
 
-async def main():
+async def run_bot():
+    if not settings.BOT_TOKEN:
+        logger.warning("BOT_TOKEN is empty, skipping bot start")
+        return
+
     logger.info("Starting Duosearch bot...")
     bot = Bot(token=settings.BOT_TOKEN)
     dp = Dispatcher()
@@ -70,6 +49,13 @@ async def main():
 
     logger.info("Bot is running. Press Ctrl+C to stop.")
     await dp.start_polling(bot)
+
+
+async def main():
+    logging.basicConfig(level=logging.INFO)
+    logging.getLogger("aiogram.event").setLevel(logging.INFO)
+    logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
+    await run_bot()
 
 
 if __name__ == "__main__":
