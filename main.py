@@ -2,6 +2,7 @@ import asyncio
 import logging
 
 from aiogram import Bot, Dispatcher
+from sqlalchemy import text
 
 from config import settings
 from db.base import async_session_maker, engine, Base
@@ -52,6 +53,16 @@ async def run_bot():
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        # Add columns that might not exist in existing tables
+        for stmt in [
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS bio TEXT",
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS photo_url VARCHAR",
+        ]:
+            try:
+                await conn.execute(text(stmt))
+                logger.info("Migration: %s", stmt)
+            except Exception as mig_e:
+                logger.warning("Migration skipped (might already exist): %s", mig_e)
         logger.info("Database tables created/verified")
 
     logger.info("Bot is running. Press Ctrl+C to stop.")
