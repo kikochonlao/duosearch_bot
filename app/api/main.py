@@ -51,4 +51,16 @@ app.include_router(games.router, prefix="/api/games", tags=["games"])
 
 @app.get("/api/health")
 async def health():
-    return {"status": "ok"}
+    return {
+        "status": "ok",
+        "bot_task_alive": _bot_task is not None and not _bot_task.done(),
+    }
+
+@app.get("/api/bot-status")
+async def bot_status():
+    if _bot_task is None:
+        return {"status": "bot_task_not_created"}
+    if _bot_task.done():
+        exc = _bot_task.exception()
+        return {"status": "bot_task_finished", "exception": str(exc) if exc else "No exception"}
+    return {"status": "bot_task_running"}

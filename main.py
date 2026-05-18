@@ -23,7 +23,13 @@ async def run_bot():
         return
 
     logger.info("Starting Duosearch bot...")
-    bot = Bot(token=settings.BOT_TOKEN)
+    try:
+        bot = Bot(token=settings.BOT_TOKEN)
+        me = await bot.get_me()
+        logger.info("Bot connected: @%s (ID: %d)", me.username or "?", me.id)
+    except Exception as e:
+        logger.error("Failed to connect bot: %s", e, exc_info=True)
+        return
     dp = Dispatcher()
 
     dp.update.middleware(DbSessionMiddleware(async_session_maker))
@@ -48,7 +54,10 @@ async def run_bot():
         logger.info("Database tables created/verified")
 
     logger.info("Bot is running. Press Ctrl+C to stop.")
-    await dp.start_polling(bot)
+    try:
+        await dp.start_polling(bot)
+    except Exception as e:
+        logger.error("Bot polling error: %s", e, exc_info=True)
 
 
 async def main():
