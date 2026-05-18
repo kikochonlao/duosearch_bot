@@ -30,11 +30,10 @@ async def create_lobby(
     if not lobby:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
+    from db.models.user import User
+
     await session.commit()
     cnt = await repo._member_count(lobby.id)
-    creator = await session.get(type(lobby).__module__, lobby.creator_id)  # skip
-
-    from db.models.user import User
     creator = await session.get(User, lobby.creator_id)
     return LobbyOut(
         id=lobby.id, creator_id=lobby.creator_id, game=lobby.game,

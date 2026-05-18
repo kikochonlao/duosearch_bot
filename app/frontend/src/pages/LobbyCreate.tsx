@@ -48,7 +48,7 @@ export default function LobbyCreate({ user }: Props) {
   }
 
   return (
-    <main style={{ minHeight: '100vh', background: 'var(--background)', padding: '24px 16px', paddingTop: 40 }}>
+    <main style={{ minHeight: '100vh', background: 'var(--background)', padding: '24px 16px', paddingTop: 40, paddingBottom: 100 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
         <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', color: 'var(--foreground)', cursor: 'pointer', fontSize: 20 }}>
           ←

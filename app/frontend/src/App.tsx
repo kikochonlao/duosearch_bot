@@ -111,7 +111,7 @@ export default function App() {
         <Route path="*" element={<Welcome user={user} />} />
       </Routes>
 
-      {user?.is_registered && !location.pathname.startsWith('/chat/') && !location.pathname.startsWith('/match/') && !location.pathname.match(/^\/lobbies\/\d+$/) && (
+      {user?.is_registered && !location.pathname.startsWith('/chat/') && !location.pathname.startsWith('/match/') && !location.pathname.startsWith('/lobbies/') && (
         <nav style={{
           position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 100,
           display: 'flex', alignItems: 'center',
