@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps.auth import get_telegram_user, resolve_telegram_id
@@ -7,7 +8,10 @@ from app.api.schemas.lobbies import (
     LobbyCreate, LobbyOut, LobbyDetailOut, LobbyMemberOut,
     LobbyMessageOut, LobbyMessageSend, LobbyListResponse,
 )
+from config import settings
 from db.repositories.lobby_repo import LobbyRepository
+from db.models.user import User as DBUser
+from services.notification_service import notify_lobby_join, notify_lobby_approved
 
 router = APIRouter()
 
@@ -145,6 +149,21 @@ async def join_lobby(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=msg)
 
     await session.commit()
+
+    lobby = await repo.get_lobby(lobby_id)
+    if lobby:
+        joiner = await session.execute(
+            select(DBUser).where(DBUser.telegram_id == telegram_id)
+        )
+        joiner_user = joiner.scalar_one_or_none()
+        if joiner_user and lobby.creator_id != joiner_user.id:
+            creator_user = await session.get(DBUser, lobby.creator_id)
+            if creator_user:
+                await notify_lobby_join(
+                    creator_user.telegram_id, lobby.title,
+                    joiner_user.name, settings.MINI_APP_URL,
+                )
+
     return {"ok": True, "message": msg}
 
 
@@ -183,6 +202,15 @@ async def approve_member(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot approve")
 
     await session.commit()
+
+    lobby = await repo.get_lobby(lobby_id)
+    if lobby:
+        approved_user = await session.get(DBUser, user_id)
+        if approved_user:
+            await notify_lobby_approved(
+                approved_user.telegram_id, lobby.title, settings.MINI_APP_URL,
+            )
+
     return {"ok": True}
 
 

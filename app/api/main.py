@@ -17,6 +17,13 @@ async def lifespan(app: FastAPI):
     global _bot_task
     if asyncio.get_event_loop().is_running():
         try:
+            import logging
+            logger = logging.getLogger("duosearch")
+
+            from bot_instance import init_bot, get_bot
+            await init_bot()
+            logger.info("Shared bot instance initialized")
+
             from main import run_bot
             _bot_task = asyncio.create_task(run_bot())
         except Exception as e:

@@ -5,11 +5,13 @@ from sqlalchemy import select, or_
 from app.api.deps.auth import get_telegram_user, resolve_telegram_id
 from app.api.deps.db import get_session
 from app.api.schemas.chat import MessageOut, MessageSend, ChatSessionOut
+from config import settings
 from db.models.user import User
 from db.models.match import Match
 from db.models.chat_session import ChatSession
 from db.models.message import Message
 from db.repositories.chat_repo import ChatRepository
+from services.notification_service import notify_message
 
 router = APIRouter()
 
@@ -127,6 +129,11 @@ async def send_message(
     session.add(msg)
     await session.commit()
     await session.refresh(msg)
+
+    other_id = match.user2_id if match.user1_id == me_user.id else match.user1_id
+    other = await session.get(User, other_id)
+    if other:
+        await notify_message(other.telegram_id, me_user.name, body.text, settings.MINI_APP_URL)
 
     return MessageOut(
         id=msg.id,

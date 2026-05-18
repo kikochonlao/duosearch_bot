@@ -6,8 +6,10 @@ from app.api.deps.db import get_session
 from app.api.schemas.discover import DiscoverResponse, DiscoverCandidate, LikeRequest, LikeResponse, SkipRequest
 from app.api.schemas.profile import ProfileOut, GameProfileSchema
 from app.api.routers.profile import _profile_to_out
+from config import settings
 from db.repositories.like_repo import LikeRepository
 from services.feed_service import FeedService
+from services.notification_service import notify_like, notify_match
 
 router = APIRouter()
 
@@ -71,6 +73,19 @@ async def like_user(
     matched_profile = None
     if to_user:
         matched_profile = _profile_to_out(to_user)
+        game = body.game or ""
+        mini_app_url = settings.MINI_APP_URL
+
+        if is_match:
+            await notify_match(telegram_id, to_user.name, game, mini_app_url)
+            from sqlalchemy import select
+            from db.models.user import User as DBUser
+            me_result = await session.execute(select(DBUser).where(DBUser.telegram_id == telegram_id))
+            me_user = me_result.scalar_one_or_none()
+            if me_user:
+                await notify_match(to_user.telegram_id, me_user.name, game, mini_app_url)
+        else:
+            await notify_like(body.to_telegram_id, matched_profile.name, game)
 
     return LikeResponse(is_match=is_match, match_id=match_id, matched_user=matched_profile)
 

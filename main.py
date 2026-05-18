@@ -25,13 +25,16 @@ async def run_bot():
 
     logging.basicConfig(level=logging.INFO, force=True)
     logger.info("Starting Duosearch bot...")
+
+    from bot_instance import init_bot, get_bot
     try:
-        bot = Bot(token=settings.BOT_TOKEN)
+        bot = await init_bot()
         me = await bot.get_me()
         logger.info("Bot connected: @%s (ID: %d)", me.username or "?", me.id)
     except Exception as e:
         logger.error("Failed to connect bot: %s", e, exc_info=True)
         return
+
     dp = Dispatcher()
 
     dp.update.middleware(DbSessionMiddleware(async_session_maker))
