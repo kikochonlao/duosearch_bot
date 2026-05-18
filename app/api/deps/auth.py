@@ -36,11 +36,18 @@ async def get_telegram_user(init_data: str = Header(alias="x-telegram-init-data"
 
 
 async def resolve_telegram_id(auth: dict) -> int | None:
-    raw = auth.get("user", {}).get("id")
-    if isinstance(raw, str):
+    user_data = auth.get("user")
+    if isinstance(user_data, str):
         try:
-            return int(json.loads(raw).get("id"))
+            user_data = json.loads(user_data)
         except (json.JSONDecodeError, TypeError):
             pass
-    tid = int(raw) if raw else None
-    return tid or auth.get("telegram_id")
+    if isinstance(user_data, dict):
+        raw = user_data.get("id")
+        if isinstance(raw, str):
+            try:
+                return int(json.loads(raw).get("id"))
+            except (json.JSONDecodeError, TypeError):
+                pass
+        return int(raw) if raw else None
+    return auth.get("telegram_id")
