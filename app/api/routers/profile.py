@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-from app.api.deps.auth import get_telegram_user
+from app.api.deps.auth import get_telegram_user, resolve_telegram_id
 from app.api.deps.db import get_session
 from app.api.schemas.profile import ProfileOut, ProfileUpdate, GameProfileSchema
 from db.models.user import User
@@ -39,15 +39,7 @@ async def get_profile(
     auth: dict = Depends(get_telegram_user),
     session: AsyncSession = Depends(get_session),
 ):
-    telegram_id = auth.get("user", {}).get("id")
-    if isinstance(telegram_id, str):
-        import json
-        try:
-            telegram_id = json.loads(telegram_id).get("id")
-        except (json.JSONDecodeError, TypeError):
-            pass
-
-    telegram_id = int(telegram_id) if telegram_id else auth.get("telegram_id")
+    telegram_id = await resolve_telegram_id(auth)
 
     result = await session.execute(select(User).where(User.telegram_id == telegram_id))
     user = result.scalar_one_or_none()
@@ -64,16 +56,7 @@ async def create_or_update_profile(
     auth: dict = Depends(get_telegram_user),
     session: AsyncSession = Depends(get_session),
 ):
-    telegram_id = auth.get("user", {}).get("id")
-    if isinstance(telegram_id, str):
-        import json
-        try:
-            telegram_id = json.loads(telegram_id).get("id")
-        except (json.JSONDecodeError, TypeError):
-            pass
-
-    telegram_id = int(telegram_id) if telegram_id else None
-
+    telegram_id = await resolve_telegram_id(auth)
     username = None
     user_raw = auth.get("user")
     if isinstance(user_raw, str):
@@ -105,6 +88,7 @@ async def create_or_update_profile(
         gender=profile.gender,
         language=profile.language or "ru",
         region=profile.region or "cis",
+        username=username,
         bio=profile.bio,
         photo_url=profile.photo_url,
         looking_for=profile.looking_for or "any",
@@ -125,16 +109,7 @@ async def update_profile(
     auth: dict = Depends(get_telegram_user),
     session: AsyncSession = Depends(get_session),
 ):
-    telegram_id = auth.get("user", {}).get("id")
-    if isinstance(telegram_id, str):
-        import json
-        try:
-            telegram_id = json.loads(telegram_id).get("id")
-        except (json.JSONDecodeError, TypeError):
-            pass
-
-    telegram_id = int(telegram_id) if telegram_id else None
-
+    telegram_id = await resolve_telegram_id(auth)
     if not telegram_id:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No telegram_id")
 

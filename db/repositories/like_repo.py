@@ -4,6 +4,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from db.models.user import User as DBUser
 from db.models.like import Like
 from db.models.block import Block
+from db.models.skip import Skip
+from db.models.chat_session import ChatSession
 from db.mappers import db_to_domain
 from core.models.user import User
 
@@ -22,12 +24,12 @@ class LikeRepository:
     async def get_user_by_telegram(self, telegram_id: int) -> DBUser | None:
         return await self._get_user_by_telegram(telegram_id)
 
-    async def like(self, from_telegram_id: int, to_telegram_id: int, game: str) -> tuple[bool, int, DBUser | None]:
+    async def like(self, from_telegram_id: int, to_telegram_id: int, game: str) -> tuple[bool, int | None, DBUser | None]:
         from_user = await self._get_user_by_telegram(from_telegram_id)
         to_user = await self._get_user_by_telegram(to_telegram_id)
 
         if not from_user or not to_user:
-            return False, 0, None
+            return False, None, None
 
         existing = await self.session.execute(
             select(Like).where(
@@ -36,10 +38,11 @@ class LikeRepository:
             )
         )
         if existing.scalar_one_or_none():
-            return False, 0, None
+            return False, None, None
 
         like = Like(from_user_id=from_user.id, to_user_id=to_user.id, game=game)
         self.session.add(like)
+        await self.session.flush()
 
         existing_mutual = await self.session.execute(
             select(Like).where(
@@ -53,14 +56,28 @@ class LikeRepository:
             from db.models.match import Match
             match = Match(user1_id=from_user.id, user2_id=to_user.id)
             self.session.add(match)
-            await self.session.commit()
+            await self.session.flush()
+            cs = ChatSession(match_id=match.id, user1_id=from_user.id, user2_id=to_user.id)
+            self.session.add(cs)
+            await self.session.flush()
             return True, match.id, to_user
 
-        await self.session.commit()
-        return False, 0, to_user
+        return False, None, to_user
 
     async def skip(self, from_telegram_id: int, to_telegram_id: int):
-        pass
+        from_user = await self._get_user_by_telegram(from_telegram_id)
+        to_user = await self._get_user_by_telegram(to_telegram_id)
+        if not from_user or not to_user:
+            return
+        existing = await self.session.execute(
+            select(Skip).where(
+                Skip.from_user_id == from_user.id,
+                Skip.to_user_id == to_user.id,
+            )
+        )
+        if existing.scalar_one_or_none():
+            return
+        self.session.add(Skip(from_user_id=from_user.id, to_user_id=to_user.id))
 
     async def get_interacted_ids(self, telegram_id: int) -> set[int]:
         me = await self._get_user_by_telegram(telegram_id)
@@ -72,12 +89,17 @@ class LikeRepository:
         )
         liked_ids = {r[0] for r in likes_result.fetchall()}
 
+        skips_result = await self.session.execute(
+            select(Skip.to_user_id).where(Skip.from_user_id == me.id)
+        )
+        skipped_ids = {r[0] for r in skips_result.fetchall()}
+
         blocks_result = await self.session.execute(
             select(Block.blocked_user_id).where(Block.user_id == me.id)
         )
         blocked_ids = {r[0] for r in blocks_result.fetchall()}
 
-        return liked_ids | blocked_ids
+        return liked_ids | skipped_ids | blocked_ids
 
     async def get_liked_me(self, telegram_id: int, game: str = None) -> list[DBUser]:
         me = await self._get_user_by_telegram(telegram_id)

@@ -2,14 +2,13 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, or_
 
-from app.api.deps.auth import get_telegram_user
+from app.api.deps.auth import get_telegram_user, resolve_telegram_id
 from app.api.deps.db import get_session
 from app.api.schemas.matches import MatchOut
 from app.api.schemas.profile import ProfileOut, GameProfileSchema
 from db.models.user import User
 from db.models.match import Match
 from db.models.chat_session import ChatSession
-from db.mappers import db_to_domain
 
 router = APIRouter()
 
@@ -39,15 +38,7 @@ async def get_matches(
     auth: dict = Depends(get_telegram_user),
     session: AsyncSession = Depends(get_session),
 ):
-    telegram_id = auth.get("user", {}).get("id")
-    if isinstance(telegram_id, str):
-        import json
-        try:
-            telegram_id = json.loads(telegram_id).get("id")
-        except (json.JSONDecodeError, TypeError):
-            pass
-    telegram_id = int(telegram_id) if telegram_id else None
-
+    telegram_id = await resolve_telegram_id(auth)
     if not telegram_id:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No telegram_id")
 

@@ -1,11 +1,8 @@
-import json
-from datetime import datetime, timezone
-
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, or_
 
-from app.api.deps.auth import get_telegram_user
+from app.api.deps.auth import get_telegram_user, resolve_telegram_id
 from app.api.deps.db import get_session
 from app.api.schemas.chat import MessageOut, MessageSend, ChatSessionOut
 from db.models.user import User
@@ -17,22 +14,12 @@ from db.repositories.chat_repo import ChatRepository
 router = APIRouter()
 
 
-async def _resolve_telegram_id(auth: dict) -> int:
-    raw = auth.get("user", {}).get("id")
-    if isinstance(raw, str):
-        try:
-            return int(json.loads(raw).get("id"))
-        except (json.JSONDecodeError, TypeError):
-            pass
-    return int(raw) if raw else None
-
-
 @router.get("/sessions", response_model=list[ChatSessionOut])
 async def get_chat_sessions(
     auth: dict = Depends(get_telegram_user),
     session: AsyncSession = Depends(get_session),
 ):
-    telegram_id = await _resolve_telegram_id(auth)
+    telegram_id = await resolve_telegram_id(auth)
     if not telegram_id:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No telegram_id")
 
@@ -75,7 +62,7 @@ async def get_messages(
     auth: dict = Depends(get_telegram_user),
     session: AsyncSession = Depends(get_session),
 ):
-    telegram_id = await _resolve_telegram_id(auth)
+    telegram_id = await resolve_telegram_id(auth)
     if not telegram_id:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No telegram_id")
 
@@ -115,7 +102,7 @@ async def send_message(
     auth: dict = Depends(get_telegram_user),
     session: AsyncSession = Depends(get_session),
 ):
-    telegram_id = await _resolve_telegram_id(auth)
+    telegram_id = await resolve_telegram_id(auth)
     if not telegram_id:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No telegram_id")
 

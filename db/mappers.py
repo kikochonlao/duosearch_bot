@@ -25,6 +25,7 @@ def db_to_domain(user: DBUser) -> User:
         gender=user.gender,
         language=user.language,
         region=user.region,
+        username=user.username,
         bio=user.bio,
         photo_url=user.photo_url,
         games=games,

@@ -37,6 +37,7 @@ class User:
     language: str
     region: str
     games: Dict[str, GameProfile]
+    username: Optional[str] = None
     bio: Optional[str] = None
     photo_url: Optional[str] = None
     looking_for: str = "any"

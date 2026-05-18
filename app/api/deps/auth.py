@@ -1,5 +1,6 @@
 import hashlib
 import hmac
+import json
 from urllib.parse import parse_qs
 
 from fastapi import Header, HTTPException, status
@@ -32,3 +33,14 @@ async def get_telegram_user(init_data: str = Header(alias="x-telegram-init-data"
     if not init_data:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing init data header")
     return verify_telegram_init_data(init_data)
+
+
+async def resolve_telegram_id(auth: dict) -> int | None:
+    raw = auth.get("user", {}).get("id")
+    if isinstance(raw, str):
+        try:
+            return int(json.loads(raw).get("id"))
+        except (json.JSONDecodeError, TypeError):
+            pass
+    tid = int(raw) if raw else None
+    return tid or auth.get("telegram_id")

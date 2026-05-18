@@ -24,6 +24,7 @@ async def upsert_user(
     gender: str,
     language: str,
     region: str,
+    username: str | None = None,
     bio: str | None = None,
     photo_url: str | None = None,
     looking_for: str = "any",
@@ -50,6 +51,7 @@ async def upsert_user(
         db_user.gender = gender
         db_user.language = language
         db_user.region = region
+        db_user.username = username
         db_user.bio = bio
         db_user.photo_url = photo_url
         db_user.looking_for = looking_for
@@ -62,6 +64,7 @@ async def upsert_user(
             gender=gender,
             language=language,
             region=region,
+            username=username,
             bio=bio,
             photo_url=photo_url,
             looking_for=looking_for,
