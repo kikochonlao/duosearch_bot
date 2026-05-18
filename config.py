@@ -10,6 +10,7 @@ class Settings(BaseModel):
     DATABASE_URL: str
     ADMIN_IDS: str = ""
     ECHO_SQL: bool = False
+    MINI_APP_URL: str = "https://frontend-ivory-nine-61.vercel.app"
 
     @property
     def admin_ids_list(self) -> list[int]:
@@ -21,6 +22,7 @@ settings = Settings(
     DATABASE_URL=os.getenv("DATABASE_URL", "sqlite+aiosqlite:///db.sqlite3"),
     ADMIN_IDS=os.getenv("ADMIN_IDS", ""),
     ECHO_SQL=os.getenv("ECHO_SQL", "false").lower() in ("1", "true", "yes"),
+    MINI_APP_URL=os.getenv("MINI_APP_URL", "https://frontend-ivory-nine-61.vercel.app"),
 )
 
 # Ensure async DSN for PostgreSQL

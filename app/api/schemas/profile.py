@@ -16,6 +16,8 @@ class ProfileOut(BaseModel):
     gender: str
     language: str
     region: str
+    bio: Optional[str] = None
+    photo_url: Optional[str] = None
     looking_for: str
     games: dict[str, GameProfileSchema]
     is_banned: int
@@ -27,5 +29,7 @@ class ProfileUpdate(BaseModel):
     gender: Optional[str] = None
     language: Optional[str] = None
     region: Optional[str] = None
+    bio: Optional[str] = None
+    photo_url: Optional[str] = None
     looking_for: Optional[str] = None
     games: Optional[dict[str, GameProfileSchema]] = None

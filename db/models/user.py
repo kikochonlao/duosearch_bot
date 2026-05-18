@@ -17,6 +17,8 @@ class User(Base):
     gender = Column(String, nullable=False, default="M")
     language = Column(String, nullable=False, default="ru")
     region = Column(String, nullable=False, default="cis")
+    bio = Column(Text, nullable=True)
+    photo_url = Column(String, nullable=True)
     looking_for = Column(String, nullable=False, default="any")
     games = Column(Text, nullable=False, default="{}")
     created_at = Column(DateTime, default=datetime.utcnow)

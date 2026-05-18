@@ -24,8 +24,10 @@ async def upsert_user(
     gender: str,
     language: str,
     region: str,
-    looking_for: str,
-    games: dict,
+    bio: str | None = None,
+    photo_url: str | None = None,
+    looking_for: str = "any",
+    games: dict = None,
 ) -> User:
     # Convert GameProfile objects to dicts if needed
     games_dict = {}
@@ -48,8 +50,10 @@ async def upsert_user(
         db_user.gender = gender
         db_user.language = language
         db_user.region = region
+        db_user.bio = bio
+        db_user.photo_url = photo_url
         db_user.looking_for = looking_for
-        db_user.set_games(games_dict)
+        db_user.set_games(games_dict or {})
     else:
         db_user = DBUser(
             telegram_id=telegram_id,
@@ -58,9 +62,11 @@ async def upsert_user(
             gender=gender,
             language=language,
             region=region,
+            bio=bio,
+            photo_url=photo_url,
             looking_for=looking_for,
         )
-        db_user.set_games(games_dict)
+        db_user.set_games(games_dict or {})
         session.add(db_user)
         await session.flush()
 

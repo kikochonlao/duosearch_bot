@@ -14,7 +14,7 @@ export default function Discover({ user }: Props) {
   const [currentIdx, setCurrentIdx] = useState(0)
   const [loading, setLoading] = useState(true)
   const [matchPopup, setMatchPopup] = useState<{ matchId: number; name: string } | null>(null)
-  const [animDir, setAnimDir] = useState<'left' | 'right' | null>(null)
+  const [animClass, setAnimClass] = useState('')
 
   useEffect(() => {
     api.getGames().then(data => {
@@ -38,7 +38,7 @@ export default function Discover({ user }: Props) {
 
   const handleLike = async () => {
     if (!current) return
-    setAnimDir('right')
+    setAnimClass('fadeIn')
     try {
       const res = await api.likeUser(current.user.telegram_id, selectedGame)
       if (res.is_match && res.match_id) {
@@ -46,60 +46,114 @@ export default function Discover({ user }: Props) {
       }
       setTimeout(() => {
         hasMore ? setCurrentIdx(i => i + 1) : setCandidates([])
-        setAnimDir(null)
+        setAnimClass('')
       }, 200)
-    } catch { setAnimDir(null) }
+    } catch { setAnimClass('') }
   }
 
   const handleSkip = () => {
-    setAnimDir('left')
+    setAnimClass('fadeIn')
     setTimeout(() => {
       hasMore ? setCurrentIdx(i => i + 1) : setCandidates([])
-      setAnimDir(null)
+      setAnimClass('')
     }, 200)
   }
 
+  const gameInfo = (key: string) => games.find(g => g.key === key)
+
   if (matchPopup) {
     return (
-      <div style={{
-        display: 'flex', flexDirection: 'column', alignItems: 'center',
-        justifyContent: 'center', minHeight: '80vh', padding: 24, textAlign: 'center',
-        background: 'radial-gradient(ellipse at center, color-mix(in srgb, var(--tg-success) 20%, transparent), transparent)',
+      <main style={{
+        minHeight: '100vh', background: 'var(--background)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: 24, position: 'relative', overflow: 'hidden',
       }}>
-        <div style={{ fontSize: 100, marginBottom: 16, animation: 'matchPulse 0.8s ease-out' }}>🎉</div>
-        <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 4 }}>It's a Match!</h2>
-        <p style={{ color: 'var(--tg-hint)', marginBottom: 32 }}>
-          You and <strong>{matchPopup.name}</strong> liked each other
-        </p>
-        <button className="btn-primary" onClick={() => { setMatchPopup(null); navigate(`/chat/${matchPopup.matchId}`) }}
-          style={{ maxWidth: 280, marginBottom: 12 }}>
-          💬 Send a message
-        </button>
-        <button className="btn-secondary" onClick={() => setMatchPopup(null)} style={{ maxWidth: 280 }}>
-          Keep browsing
-        </button>
-      </div>
+        <div style={{
+          position: 'absolute', top: '30%', left: '30%',
+          width: 200, height: 200, borderRadius: '50%',
+          background: 'rgba(197, 84, 212, 0.3)', filter: 'blur(60px)',
+        }} />
+        <div style={{
+          position: 'absolute', bottom: '20%', right: '20%',
+          width: 200, height: 200, borderRadius: '50%',
+          background: 'rgba(232, 87, 158, 0.3)', filter: 'blur(60px)',
+        }} />
+
+        <div style={{ textAlign: 'center', maxWidth: 320, position: 'relative', zIndex: 2 }}>
+          <svg style={{ width: 48, height: 48, margin: '0 auto 16px', color: 'var(--pink)' }} viewBox="0 0 24 24" fill="none">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="var(--pink)" />
+          </svg>
+          <h2 style={{ fontSize: 32, fontWeight: 700, marginBottom: 8 }} className="text-gradient">
+            It's a Match!
+          </h2>
+
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, margin: '24px 0' }}>
+            <div style={{
+              width: 72, height: 72, borderRadius: '50%',
+              border: '3px solid var(--primary)',
+              background: 'linear-gradient(135deg, var(--primary), var(--accent))',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 28, fontWeight: 700, color: '#fff',
+            }}>
+              {user?.username?.charAt(0)?.toUpperCase() || 'Y'}
+            </div>
+            <svg width={32} height={32} viewBox="0 0 24 24" fill="var(--pink)"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" /></svg>
+            <div style={{
+              width: 72, height: 72, borderRadius: '50%',
+              border: '3px solid var(--pink)',
+              background: 'linear-gradient(135deg, var(--pink), var(--primary))',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 28, fontWeight: 700, color: '#fff',
+            }}>
+              {matchPopup.name.charAt(0)}
+            </div>
+          </div>
+
+          <p style={{ color: 'var(--muted-foreground)', marginBottom: 28, fontSize: 15 }}>
+            You and <strong style={{ color: 'var(--foreground)' }}>{matchPopup.name}</strong> liked each other
+          </p>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <button onClick={() => { navigate(`/chat/${matchPopup.matchId}`) }}
+              className="btn-primary" style={{ padding: 16 }}>
+              Start a Chat
+            </button>
+            <button onClick={() => setMatchPopup(null)}
+              className="btn-secondary" style={{ padding: 16 }}>
+              Keep Swiping
+            </button>
+          </div>
+        </div>
+      </main>
     )
   }
 
   if (loading) {
     return (
-      <div className="page" style={{ paddingTop: 40 }}>
+      <main style={{ minHeight: '100vh', background: 'var(--background)', padding: 24, paddingTop: 40 }}>
         <div className="skeleton" style={{ height: 20, width: '40%', marginBottom: 16 }} />
-        <div className="skeleton" style={{ height: 360, borderRadius: 16, marginBottom: 16 }} />
-      </div>
+        <div className="skeleton" style={{ height: 400, borderRadius: 16 }} />
+      </main>
     )
   }
 
   if (candidates.length === 0) {
     return (
-      <div className="page" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '70vh' }}>
-        <div style={{ fontSize: 64, marginBottom: 16 }}>🔍</div>
+      <main style={{
+        minHeight: '100vh', background: 'var(--background)',
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
+        justifyContent: 'center', padding: 24, textAlign: 'center',
+      }}>
+        <div style={{
+          width: 64, height: 64, borderRadius: '50%',
+          background: 'var(--muted)', display: 'flex', alignItems: 'center',
+          justifyContent: 'center', fontSize: 28, marginBottom: 16,
+        }}>🔍</div>
         <h3 style={{ fontSize: 20, marginBottom: 8 }}>No candidates found</h3>
-        <p style={{ color: 'var(--tg-hint)', fontSize: 14, marginBottom: 24, textAlign: 'center' }}>
+        <p style={{ color: 'var(--muted-foreground)', fontSize: 14, marginBottom: 24, maxWidth: 300 }}>
           Try a different game or check back later
         </p>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center', marginBottom: 20 }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center' }}>
           {games.map(g => (
             <button key={g.key} className={`chip ${selectedGame === g.key ? 'active' : ''}`}
               onClick={() => setSelectedGame(g.key)}>
@@ -107,16 +161,22 @@ export default function Discover({ user }: Props) {
             </button>
           ))}
         </div>
-      </div>
+      </main>
     )
   }
 
   return (
-    <div className="page" style={{ paddingTop: 12 }}>
-      <div style={{
-        display: 'flex', gap: 8, marginBottom: 16, overflowX: 'auto',
-        paddingBottom: 4, scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch',
-      }}>
+    <main style={{ minHeight: '100vh', background: 'var(--background)', paddingBottom: 80 }}>
+      {/* Header */}
+      <div className="sticky-header">
+        <h1 style={{ fontSize: 18, fontWeight: 600 }}>Discover</h1>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button style={{ background: 'none', border: 'none', color: 'var(--muted-foreground)', cursor: 'pointer', fontSize: 20 }}>⚙️</button>
+        </div>
+      </div>
+
+      {/* Game filter chips */}
+      <div style={{ display: 'flex', gap: 8, overflowX: 'auto', padding: '12px 16px', scrollbarWidth: 'none' }}>
         {games.map(g => (
           <button key={g.key} className={`chip ${selectedGame === g.key ? 'active' : ''}`}
             onClick={() => setSelectedGame(g.key)} style={{ whiteSpace: 'nowrap', flexShrink: 0 }}>
@@ -125,65 +185,123 @@ export default function Discover({ user }: Props) {
         ))}
       </div>
 
-      <div style={{
-        animation: animDir === 'right' ? 'slideUp 0.4s ease-out' : animDir === 'left' ? 'fadeIn 0.4s ease-out' : 'none',
-      }}>
-        <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+      {/* Profile card */}
+      <div style={{ padding: '4px 16px', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <div style={{
+          width: '100%', maxWidth: 400, borderRadius: 16,
+          border: '1px solid var(--border)', background: 'var(--card)',
+          overflow: 'hidden', position: 'relative',
+          animation: animClass === 'fadeIn' ? 'fadeIn 0.3s ease-out' : 'none',
+        }}>
+          {/* Avatar area */}
           <div style={{
-            padding: 24, textAlign: 'center', position: 'relative',
-            background: 'linear-gradient(180deg, color-mix(in srgb, var(--tg-button) 10%, transparent), var(--tg-secondary-bg) 60%)',
+            position: 'relative', width: '100%', aspectRatio: '3/4',
+            background: 'linear-gradient(180deg, rgba(197,84,212,0.15), var(--card))',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            <div className="avatar lg" style={{ margin: '0 auto 12px' }}>
-              {current.user.name[0].toUpperCase()}
+            <div style={{
+              width: 120, height: 120, borderRadius: '50%',
+              border: '3px solid var(--primary)',
+              background: 'linear-gradient(135deg, var(--primary), var(--accent))',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 48, fontWeight: 700, color: '#fff',
+            }}>
+              {current.user.name.charAt(0).toUpperCase()}
             </div>
-            <h3 style={{ fontSize: 22, fontWeight: 700 }}>{current.user.name}, {current.user.age}</h3>
-            <p style={{ color: 'var(--tg-hint)', fontSize: 14, marginTop: 4 }}>
-              {current.user.gender === 'M' ? '♂️' : '♀️'} · {current.user.language} · {current.user.region.toUpperCase()}
-            </p>
+
+            {/* Online indicator */}
+            <div style={{
+              position: 'absolute', top: 16, right: 16,
+              display: 'flex', alignItems: 'center', gap: 4,
+              borderRadius: 12, background: 'rgba(77,212,122,0.15)',
+              padding: '4px 8px',
+            }}>
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--green)' }} />
+              <span style={{ fontSize: 12, color: 'var(--green)' }}>Online</span>
+            </div>
           </div>
 
-          <div style={{ padding: '12px 16px 20px' }}>
-            <div style={{ fontSize: 13, color: 'var(--tg-hint)', marginBottom: 8, fontWeight: 600 }}>GAMES</div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+          {/* Info */}
+          <div style={{
+            padding: 16, marginTop: -60, position: 'relative',
+            background: 'linear-gradient(180deg, transparent, var(--card) 30%)',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <h2 style={{ fontSize: 24, fontWeight: 700 }}>
+                {current.user.name}
+              </h2>
+              <svg width={20} height={20} viewBox="0 0 24 24" fill="var(--pink)">
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+              </svg>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--muted-foreground)', fontSize: 14, marginTop: 4 }}>
+              <span>{current.user.age}</span>
+              <span>•</span>
+              <span>{current.user.region.toUpperCase()}</span>
+              <span>•</span>
+              <span style={{ color: 'var(--gold)', fontWeight: 600 }}>{Object.values(current.user.games).map(g => g.rank || Object.values(g.roles)[0]).filter(Boolean).join(', ')}</span>
+            </div>
+
+            {/* Games */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 12 }}>
               {Object.entries(current.user.games).map(([gk, gp]) => {
-                const gInfo = games.find(g => g.key === gk)
+                const gi = gameInfo(gk)
                 return (
                   <span key={gk} className="badge game">
-                    {gInfo?.display || gk}: {gp.rank || Object.values(gp.roles)[0] || '?'}
+                    {gi?.display || gk}: {gp.rank || Object.values(gp.roles)[0] || '?'}
                   </span>
                 )
               })}
             </div>
+
+            <p style={{ color: 'var(--muted-foreground)', fontSize: 14, marginTop: 12, lineHeight: 1.5 }}>
+              Looking for teammates to play with
+            </p>
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: 24, justifyContent: 'center', marginTop: 20 }}>
+        {/* Action buttons */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 24 }}>
           <button onClick={handleSkip} style={{
-            width: 64, height: 64, borderRadius: '50%', border: '2px solid var(--tg-danger)',
-            background: 'color-mix(in srgb, var(--tg-danger) 10%, transparent)',
-            color: 'var(--tg-danger)', fontSize: 28, cursor: 'pointer',
+            width: 56, height: 56, borderRadius: '50%',
+            border: '2px solid var(--destructive)',
+            background: 'rgba(232,73,74,0.1)',
+            color: 'var(--destructive)', fontSize: 28, cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             transition: 'transform 0.15s',
           }} onMouseDown={e => (e.currentTarget.style.transform = 'scale(0.9)')}
-             onMouseUp={e => (e.currentTarget.style.transform = 'scale(1)')}>
+             onMouseUp={e => (e.currentTarget.style.transform = '')}>
             ✕
           </button>
-          <button onClick={handleLike} style={{
-            width: 64, height: 64, borderRadius: '50%', border: '2px solid var(--tg-success)',
-            background: 'color-mix(in srgb, var(--tg-success) 10%, transparent)',
-            color: 'var(--tg-success)', fontSize: 28, cursor: 'pointer',
+          <button style={{
+            width: 48, height: 48, borderRadius: '50%',
+            border: '2px solid var(--cyan)',
+            background: 'rgba(95,200,221,0.1)',
+            color: 'var(--cyan)', fontSize: 24, cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             transition: 'transform 0.15s',
           }} onMouseDown={e => (e.currentTarget.style.transform = 'scale(0.9)')}
-             onMouseUp={e => (e.currentTarget.style.transform = 'scale(1)')}>
+             onMouseUp={e => (e.currentTarget.style.transform = '')}>
+            ★
+          </button>
+          <button onClick={handleLike} style={{
+            width: 56, height: 56, borderRadius: '50%',
+            border: 'none',
+            background: 'linear-gradient(135deg, var(--primary), var(--pink))',
+            color: '#fff', fontSize: 28, cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 4px 15px rgba(197,84,212,0.3)',
+            transition: 'transform 0.15s',
+          }} onMouseDown={e => (e.currentTarget.style.transform = 'scale(0.9)')}
+             onMouseUp={e => (e.currentTarget.style.transform = '')}>
             ♥
           </button>
         </div>
 
-        <p style={{ textAlign: 'center', color: 'var(--tg-hint)', fontSize: 12, marginTop: 12 }}>
+        <p style={{ color: 'var(--muted-foreground)', fontSize: 12, marginTop: 12 }}>
           {currentIdx + 1} / {candidates.length}
         </p>
       </div>
-    </div>
+    </main>
   )
 }

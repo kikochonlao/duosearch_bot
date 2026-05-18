@@ -1,6 +1,7 @@
 import logging
 from aiogram import Router, F, Bot
-from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
+from config import settings
 from aiogram.fsm.context import FSMContext
 from aiogram.exceptions import TelegramBadRequest
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -15,6 +16,7 @@ router = Router()
 logger = logging.getLogger("duosearch.registration")
 
 MAIN_MENU = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text="🚀 Открыть DuoSearch", web_app=WebAppInfo(url=settings.MINI_APP_URL))],
     [InlineKeyboardButton(text="🔍 Найти тиммейта", callback_data="menu_myfeed")],
     [InlineKeyboardButton(text="🤝 Мои матчи", callback_data="menu_matches")],
     [InlineKeyboardButton(text="👤 Профиль", callback_data="menu_profile")],
@@ -101,7 +103,8 @@ async def start(message: Message, state: FSMContext, session: AsyncSession):
         "а дальше я всё сделаю сама ✨\n\n"
         "Ну что, начнём поиск? 🚀",
         reply_markup=InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="🚀 Начать регистрацию", callback_data="reg_start")]
+            [InlineKeyboardButton(text="🚀 Открыть DuoSearch", web_app=WebAppInfo(url=settings.MINI_APP_URL))],
+            [InlineKeyboardButton(text="📝 Регистрация в боте", callback_data="reg_start")],
         ]),
         parse_mode="HTML"
     )

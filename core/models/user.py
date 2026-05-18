@@ -36,6 +36,8 @@ class User:
     gender: str
     language: str
     region: str
+    bio: Optional[str] = None
+    photo_url: Optional[str] = None
     games: Dict[str, GameProfile]
     looking_for: str = "any"
     rating: int = 1000

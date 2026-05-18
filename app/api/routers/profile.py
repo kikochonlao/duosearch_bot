@@ -26,6 +26,8 @@ def _profile_to_out(user) -> ProfileOut:
         gender=user.gender,
         language=user.language,
         region=user.region,
+        bio=user.bio,
+        photo_url=user.photo_url,
         looking_for=user.looking_for,
         games=games_out,
         is_banned=user.is_banned,
@@ -103,6 +105,8 @@ async def create_or_update_profile(
         gender=profile.gender,
         language=profile.language or "ru",
         region=profile.region or "cis",
+        bio=profile.bio,
+        photo_url=profile.photo_url,
         looking_for=profile.looking_for or "any",
         games=games_dict,
     )

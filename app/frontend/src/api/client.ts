@@ -41,6 +41,8 @@ export interface Profile {
   gender: string
   language: string
   region: string
+  bio: string | null
+  photo_url: string | null
   looking_for: string
   games: Record<string, { rank?: string; roles: Record<string, string> }>
   is_banned: number
@@ -52,6 +54,8 @@ export interface ProfileUpdate {
   gender?: string
   language?: string
   region?: string
+  bio?: string
+  photo_url?: string
   looking_for?: string
   games?: Record<string, { rank?: string; roles: Record<string, string> }>
 }

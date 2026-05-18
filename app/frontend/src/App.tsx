@@ -12,6 +12,32 @@ import Chat from './pages/Chat'
 import MatchScreen from './pages/MatchScreen'
 import Settings from './pages/Settings'
 
+const NAV_ITEMS = [
+  { path: '/discover', icon: '🔍', label: 'Discover' },
+  { path: '/matches', icon: '❤️', label: 'Matches' },
+  { path: '/chats', icon: '💬', label: 'Chats' },
+  { path: '/profile', icon: '👤', label: 'Profile' },
+]
+
+function NavBtn({ label, icon, active, onClick }: { label: string; icon: string; active: boolean; onClick: () => void }) {
+  return (
+    <button onClick={onClick} style={{
+      flex: 1, background: 'none', border: 'none', cursor: 'pointer',
+      textAlign: 'center', padding: '8px 4px', borderRadius: 10,
+      transition: 'all 0.2s', fontFamily: 'inherit',
+    }}>
+      <div style={{
+        fontSize: 22, marginBottom: 2,
+        color: active ? 'var(--primary)' : 'var(--muted-foreground)',
+      }}>{icon}</div>
+      <div style={{
+        fontSize: 10, fontWeight: active ? 600 : 400,
+        color: active ? 'var(--primary)' : 'var(--muted-foreground)',
+      }}>{label}</div>
+    </button>
+  )
+}
+
 export default function App() {
   const [user, setUser] = useState<{ telegram_id: number; username: string | null; is_registered: boolean } | null>(null)
   const [loading, setLoading] = useState(true)
@@ -50,7 +76,7 @@ export default function App() {
       <div style={{
         minHeight: '100vh', display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center', gap: 16,
-        background: 'var(--tg-bg)', color: 'var(--tg-hint)',
+        background: 'var(--background)', color: 'var(--muted-foreground)',
       }}>
         <div className="skeleton" style={{ width: 48, height: 48, borderRadius: '50%' }} />
         <div className="skeleton" style={{ width: 120, height: 14 }} />
@@ -59,10 +85,13 @@ export default function App() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--tg-bg)', color: 'var(--tg-text)' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--background)', color: 'var(--foreground)' }}>
       <Routes>
         <Route path="/welcome" element={<Welcome user={user} />} />
-        <Route path="/register" element={<Register user={user} />} />
+        <Route path="/register" element={<Register user={user} onRegistered={() => {
+          const tg = window.Telegram?.WebApp
+          if (tg?.initData) api.login(tg.initData).then(data => setUser(data))
+        }} />} />
         <Route path="/discover" element={<Discover user={user} />} />
         <Route path="/profile" element={<ProfilePage user={user} />} />
         <Route path="/profile/edit" element={<EditProfile user={user} />} />
@@ -77,32 +106,26 @@ export default function App() {
       {user?.is_registered && (
         <nav style={{
           position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 100,
-          display: 'flex', justifyContent: 'space-around', alignItems: 'center',
-          padding: '6px 4px', paddingBottom: 'calc(6px + env(safe-area-inset-bottom, 0px))',
-          background: 'var(--tg-secondary-bg)',
-          borderTop: '1px solid var(--tg-border)',
+          display: 'flex', alignItems: 'center',
+          padding: '6px 8px',
+          paddingBottom: 'calc(6px + env(safe-area-inset-bottom, 0px))',
+          background: 'rgba(18, 16, 30, 0.95)',
+          borderTop: '1px solid var(--border)',
           backdropFilter: 'blur(20px)',
+          maxWidth: 430,
+          margin: '0 auto',
         }}>
-          <NavBtn label="Discover" icon="🔍" active={location.pathname === '/discover'} onClick={() => navigate('/discover')} />
-          <NavBtn label="Matches" icon="❤️" active={location.pathname.startsWith('/match')} onClick={() => navigate('/matches')} />
-          <NavBtn label="Chats" icon="💬" active={location.pathname.startsWith('/chat')} onClick={() => navigate('/chats')} />
-          <NavBtn label="Profile" icon="👤" active={location.pathname.startsWith('/profile')} onClick={() => navigate('/profile')} />
+          {NAV_ITEMS.map(item => (
+            <NavBtn
+              key={item.path}
+              label={item.label}
+              icon={item.icon}
+              active={location.pathname.startsWith(item.path)}
+              onClick={() => navigate(item.path)}
+            />
+          ))}
         </nav>
       )}
     </div>
-  )
-}
-
-function NavBtn({ label, icon, active, onClick }: { label: string; icon: string; active: boolean; onClick: () => void }) {
-  return (
-    <button onClick={onClick} style={{
-      background: 'none', border: 'none', cursor: 'pointer', textAlign: 'center',
-      padding: '6px 12px', borderRadius: 10, transition: 'all 0.2s',
-      color: active ? 'var(--tg-button)' : 'var(--tg-hint)',
-      opacity: active ? 1 : 0.6,
-    }}>
-      <div style={{ fontSize: 22, marginBottom: 2 }}>{icon}</div>
-      <div style={{ fontSize: 10, fontWeight: active ? 600 : 400 }}>{label}</div>
-    </button>
   )
 }
