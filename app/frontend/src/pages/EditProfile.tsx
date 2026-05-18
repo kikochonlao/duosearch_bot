@@ -12,7 +12,7 @@ export default function EditProfile({ user }: Props) {
   const [games, setGames] = useState<GameInfo[]>([])
   const [saving, setSaving] = useState(false)
   const [name, setName] = useState('')
-  const [age, setAge] = useState(18)
+  const [age, setAge] = useState<number | ''>('')
   const [gender, setGender] = useState('M')
   const [language, setLanguage] = useState('ru')
   const [region, setRegion] = useState('cis')
@@ -28,7 +28,7 @@ export default function EditProfile({ user }: Props) {
   const handleSave = async () => {
     setSaving(true)
     try {
-      await api.updateProfile({ name, age, gender, language, region })
+      await api.updateProfile({ name, age: age as number, gender, language, region })
       navigate('/profile')
     } catch (e: any) { alert(e.message) }
     finally { setSaving(false) }
@@ -47,13 +47,25 @@ export default function EditProfile({ user }: Props) {
         </div>
         <div>
           <label style={{ fontSize: 13, color: 'var(--tg-hint)', marginBottom: 6, display: 'block' }}>Age</label>
-          <input className="input-field" type="number" min={14} max={99} value={age} onChange={e => setAge(parseInt(e.target.value) || 14)} />
+          <input className="input-field" type="number" min={14} max={99} value={age === '' ? '' : age} onChange={e => { const v = e.target.value; setAge(v === '' ? '' : parseInt(v)) }} />
         </div>
         <div>
           <label style={{ fontSize: 13, color: 'var(--tg-hint)', marginBottom: 8, display: 'block' }}>Gender</label>
           <div style={{ display: 'flex', gap: 8 }}>
-            <button className={`chip ${gender === 'M' ? 'active' : ''}`} onClick={() => setGender('M')} style={{ flex: 1, justifyContent: 'center' }}>♂️ Male</button>
-            <button className={`chip ${gender === 'F' ? 'active' : ''}`} onClick={() => setGender('F')} style={{ flex: 1, justifyContent: 'center' }}>♀️ Female</button>
+            {['M', 'F'].map(g => {
+              const active = gender === g; const male = g === 'M'
+              return (
+                <button key={g} className="chip" onClick={() => setGender(g)}
+                  style={{
+                    flex: 1, justifyContent: 'center',
+                    borderColor: active ? (male ? 'var(--cyan)' : 'var(--pink)') : undefined,
+                    background: active ? (male ? 'rgba(95,200,221,0.15)' : 'rgba(232,87,158,0.15)') : undefined,
+                    color: active ? (male ? 'var(--cyan)' : 'var(--pink)') : undefined,
+                  }}>
+                  {male ? '♂️ Male' : '♀️ Female'}
+                </button>
+              )
+            })}
           </div>
         </div>
         <div>

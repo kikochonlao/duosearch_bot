@@ -30,11 +30,11 @@ export default function Register({ user, onRegistered }: Props) {
   const [step, setStep] = useState(0)
   const [gamesData, setGamesData] = useState<GameInfo[]>([])
   const [name, setName] = useState(user?.username || '')
-  const [age, setAge] = useState(18)
+  const [age, setAge] = useState<number | ''>('')
   const [gender, setGender] = useState('M')
   const [bio, setBio] = useState('')
   const [photoUrl, setPhotoUrl] = useState('')
-  const [language, setLanguage] = useState('ru')
+  const [languages, setLanguages] = useState<string[]>([])
   const [region, setRegion] = useState('cis')
   const [selectedGames, setSelectedGames] = useState<string[]>([])
   const [gameRanks, setGameRanks] = useState<Record<string, string>>({})
@@ -65,7 +65,11 @@ export default function Register({ user, onRegistered }: Props) {
     setError('')
     if (step === 0) {
       if (!name.trim()) { setError('Please enter your name'); return false }
-      if (age < 14 || age > 99) { setError('Age must be between 14 and 99'); return false }
+      if (age === '' || age < 14 || age > 99) { setError('Age must be between 14 and 99'); return false }
+      return true
+    }
+    if (step === 1) {
+      if (languages.length === 0) { setError('Select at least one language'); return false }
       return true
     }
     if (step === 2) {
@@ -118,7 +122,7 @@ export default function Register({ user, onRegistered }: Props) {
         }
       }
       try {
-        await api.createProfile({ name, age, gender, language, region, bio: bio || undefined, photo_url: photoUrl || undefined, games })
+        await api.createProfile({ name, age: age as number, gender, language: languages.join(','), region, bio: bio || undefined, photo_url: photoUrl || undefined, games })
         onRegistered?.()
         navigate('/discover', { replace: true })
       } catch (e: any) {
@@ -178,19 +182,28 @@ export default function Register({ user, onRegistered }: Props) {
           {/* Age */}
           <div>
             <label style={{ fontSize: 13, color: 'var(--muted-foreground)', marginBottom: 6, display: 'block' }}>Age</label>
-            <input className="input-field" type="number" min={14} max={99} value={age} onChange={e => setAge(parseInt(e.target.value) || 14)} />
+            <input className="input-field" type="number" min={14} max={99} value={age === '' ? '' : age} onChange={e => { const v = e.target.value; setAge(v === '' ? '' : parseInt(v)) }} />
           </div>
 
           {/* Gender */}
           <div>
             <label style={{ fontSize: 13, color: 'var(--muted-foreground)', marginBottom: 8, display: 'block' }}>Gender</label>
             <div style={{ display: 'flex', gap: 8 }}>
-              {['M', 'F'].map(g => (
-                <button key={g} className={`chip ${gender === g ? 'active' : ''}`}
-                  onClick={() => setGender(g)} style={{ flex: 1, justifyContent: 'center', padding: '12px 0' }}>
-                  {g === 'M' ? '♂️ Male' : '♀️ Female'}
-                </button>
-              ))}
+              {['M', 'F'].map(g => {
+                const active = gender === g; const male = g === 'M'
+                return (
+                  <button key={g} className="chip"
+                    onClick={() => setGender(g)}
+                    style={{
+                      flex: 1, justifyContent: 'center', padding: '12px 0',
+                      borderColor: active ? (male ? 'var(--cyan)' : 'var(--pink)') : undefined,
+                      background: active ? (male ? 'rgba(95,200,221,0.15)' : 'rgba(232,87,158,0.15)') : undefined,
+                      color: active ? (male ? 'var(--cyan)' : 'var(--pink)') : undefined,
+                    }}>
+                    {male ? '♂️ Male' : '♀️ Female'}
+                  </button>
+                )
+              })}
             </div>
           </div>
 
@@ -209,13 +222,20 @@ export default function Register({ user, onRegistered }: Props) {
         <div>
           <label style={{ fontSize: 13, color: 'var(--muted-foreground)', marginBottom: 8, display: 'block' }}>Languages you speak</label>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 24 }}>
-            {LANGUAGES.map(l => (
-              <button key={l.key} className={`chip ${language === l.key ? 'active' : ''}`}
-                onClick={() => setLanguage(l.key)}>
+              {LANGUAGES.map(l => (
+              <button key={l.key} className={`chip ${languages.includes(l.key) ? 'active' : ''}`}
+                onClick={() => setLanguages(prev =>
+                  prev.includes(l.key) ? prev.filter(k => k !== l.key) : [...prev, l.key]
+                )}>
                 {l.flag} {l.label}
               </button>
             ))}
           </div>
+          {languages.length > 0 && (
+            <p style={{ color: 'var(--muted-foreground)', fontSize: 13, marginTop: -12, marginBottom: 24 }}>
+              {languages.length} language{languages.length !== 1 ? 's' : ''} selected
+            </p>
+          )}
           <label style={{ fontSize: 13, color: 'var(--muted-foreground)', marginBottom: 8, display: 'block' }}>Region</label>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
             {REGIONS.map(r => (
