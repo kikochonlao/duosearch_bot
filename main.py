@@ -65,6 +65,12 @@ async def run_bot():
                 logger.warning("Migration skipped (might already exist): %s", mig_e)
         logger.info("Database tables created/verified")
 
+    # Delete any existing webhook before polling
+    try:
+        await bot.delete_webhook()
+    except Exception as e:
+        logger.warning("Failed to delete webhook: %s", e)
+
     logger.info("Bot is running. Press Ctrl+C to stop.")
     try:
         await dp.start_polling(bot)
