@@ -22,6 +22,7 @@ async def run_bot():
         logger.warning("BOT_TOKEN is empty, skipping bot start")
         return
 
+    logging.basicConfig(level=logging.INFO, force=True)
     logger.info("Starting Duosearch bot...")
     try:
         bot = Bot(token=settings.BOT_TOKEN)

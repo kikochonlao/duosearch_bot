@@ -68,6 +68,14 @@ def _esc(text: str) -> str:
     return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 
+# ---------------- PING (diagnostic) ----------------
+
+
+@router.message(F.text == "/ping")
+async def ping(message: Message):
+    await message.answer("pong 🏓")
+
+
 # ---------------- WELCOME ----------------
 
 @router.message(F.text == "/start")
