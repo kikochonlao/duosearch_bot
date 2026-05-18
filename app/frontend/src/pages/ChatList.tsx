@@ -25,9 +25,23 @@ export default function ChatList({ user }: Props) {
       <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 20 }}>Chats</h2>
 
       {sessions.length === 0 && (
-        <div style={{ textAlign: 'center', paddingTop: 60, color: 'var(--tg-hint)' }}>
-          <div style={{ fontSize: 48, marginBottom: 12 }}>💬</div>
-          <p>No chats yet. Match with someone!</p>
+        <div style={{
+          display: 'flex', flexDirection: 'column', alignItems: 'center',
+          justifyContent: 'center', paddingTop: 80, textAlign: 'center',
+          animation: 'fadeIn 0.5s ease-out',
+        }}>
+          <div style={{
+            width: 80, height: 80, borderRadius: '50%',
+            background: 'linear-gradient(135deg, var(--primary), var(--accent))',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 36, marginBottom: 20, opacity: 0.8,
+          }}>💬</div>
+          <h3 style={{ fontSize: 20, marginBottom: 8, color: 'var(--foreground)' }}>
+            No chats yet
+          </h3>
+          <p style={{ color: 'var(--muted-foreground)', fontSize: 14, maxWidth: 280, lineHeight: 1.5 }}>
+            Match with someone and start a conversation!
+          </p>
         </div>
       )}
 

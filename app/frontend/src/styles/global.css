@@ -89,6 +89,17 @@ a { color: var(--accent); text-decoration: none; }
   100% { background-position: -200% 0; }
 }
 
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes messageBounce {
+  0% { opacity: 0; transform: translateY(12px) scale(0.95); }
+  60% { transform: translateY(-2px) scale(1.01); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
 .gradient-primary {
   background: linear-gradient(135deg, #c554d4, #7a6bdb);
 }

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api, Candidate, GameInfo } from '../api/client'
+import { impact, notification } from '../utils/haptic'
 
 interface Props {
   user: { telegram_id: number; username: string | null; is_registered: boolean } | null
@@ -38,10 +39,12 @@ export default function Discover({ user }: Props) {
 
   const handleLike = async () => {
     if (!current) return
+    impact('medium')
     setAnimClass('fadeIn')
     try {
       const res = await api.likeUser(current.user.telegram_id, selectedGame)
       if (res.is_match && res.match_id) {
+        notification('success')
         setMatchPopup({ matchId: res.match_id, name: current.user.name })
       }
       setTimeout(() => {
@@ -52,6 +55,7 @@ export default function Discover({ user }: Props) {
   }
 
   const handleSkip = () => {
+    impact('light')
     setAnimClass('fadeIn')
     setTimeout(() => {
       hasMore ? setCurrentIdx(i => i + 1) : setCandidates([])
@@ -114,11 +118,11 @@ export default function Discover({ user }: Props) {
           </p>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <button onClick={() => { navigate(`/chat/${matchPopup.matchId}`) }}
+            <button onClick={() => { impact('medium'); navigate(`/chat/${matchPopup.matchId}`) }}
               className="btn-primary" style={{ padding: 16 }}>
               Start a Chat
             </button>
-            <button onClick={() => setMatchPopup(null)}
+            <button onClick={() => { impact('light'); setMatchPopup(null) }}
               className="btn-secondary" style={{ padding: 16 }}>
               Keep Swiping
             </button>
@@ -144,22 +148,25 @@ export default function Discover({ user }: Props) {
         display: 'flex', flexDirection: 'column', alignItems: 'center',
         justifyContent: 'center', padding: 24, textAlign: 'center',
       }}>
-        <div style={{
-          width: 64, height: 64, borderRadius: '50%',
-          background: 'var(--muted)', display: 'flex', alignItems: 'center',
-          justifyContent: 'center', fontSize: 28, marginBottom: 16,
-        }}>🔍</div>
-        <h3 style={{ fontSize: 20, marginBottom: 8 }}>No candidates found</h3>
-        <p style={{ color: 'var(--muted-foreground)', fontSize: 14, marginBottom: 24, maxWidth: 300 }}>
-          Try a different game or check back later
-        </p>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center' }}>
+        <div style={{ animation: 'fadeIn 0.5s ease-out', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <div style={{
+            width: 80, height: 80, borderRadius: '50%',
+            background: 'linear-gradient(135deg, var(--cyan), var(--primary))',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 36, marginBottom: 20, opacity: 0.8,
+          }}>🔍</div>
+          <h3 style={{ fontSize: 20, marginBottom: 8 }}>No candidates found</h3>
+          <p style={{ color: 'var(--muted-foreground)', fontSize: 14, marginBottom: 24, maxWidth: 300, lineHeight: 1.5 }}>
+            All clear! Try a different game or check back later
+          </p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center' }}>
           {games.map(g => (
             <button key={g.key} className={`chip ${selectedGame === g.key ? 'active' : ''}`}
-              onClick={() => setSelectedGame(g.key)}>
+              onClick={() => { impact('light'); setSelectedGame(g.key) }}>
               {g.display}
             </button>
           ))}
+        </div>
         </div>
       </main>
     )

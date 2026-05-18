@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { api, MessageItem, MatchItem } from '../api/client'
+import { impact } from '../utils/haptic'
 
 interface Props {
   user: { telegram_id: number; username: string | null; is_registered: boolean } | null
@@ -36,12 +37,13 @@ export default function Chat({ user }: Props) {
         const msgs = await api.getMessages(parseInt(matchId))
         if (msgs.length !== messages.length) setMessages(msgs)
       } catch {}
-    }, 3000)
+    }, 1500)
     return () => clearInterval(interval)
   }, [matchId, messages.length])
 
   const handleSend = async () => {
     if (!text.trim() || !matchId || sending) return
+    impact('light')
     setSending(true)
     try {
       const msg = await api.sendMessage(parseInt(matchId), text.trim())
@@ -80,7 +82,7 @@ export default function Chat({ user }: Props) {
           return (
             <div key={msg.id} style={{
               display: 'flex', justifyContent: isMine ? 'flex-end' : 'flex-start',
-              animation: 'slideDown 0.2s ease-out',
+              animation: 'messageBounce 0.25s ease-out',
             }}>
               <div style={{
                 maxWidth: '78%', padding: '10px 14px', borderRadius: 16,

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api, GameInfo } from '../api/client'
+import { impact } from '../utils/haptic'
 
 interface Props {
   user: { telegram_id: number; username: string | null; is_registered: boolean } | null
@@ -193,7 +194,7 @@ export default function Register({ user, onRegistered }: Props) {
                 const active = gender === g; const male = g === 'M'
                 return (
                   <button key={g} className="chip"
-                    onClick={() => setGender(g)}
+                    onClick={() => { impact('light'); setGender(g) }}
                     style={{
                       flex: 1, justifyContent: 'center', padding: '12px 0',
                       borderColor: active ? (male ? 'var(--cyan)' : 'var(--pink)') : undefined,
@@ -224,9 +225,7 @@ export default function Register({ user, onRegistered }: Props) {
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 24 }}>
               {LANGUAGES.map(l => (
               <button key={l.key} className={`chip ${languages.includes(l.key) ? 'active' : ''}`}
-                onClick={() => setLanguages(prev =>
-                  prev.includes(l.key) ? prev.filter(k => k !== l.key) : [...prev, l.key]
-                )}>
+                onClick={() => { impact('light'); setLanguages(prev => prev.includes(l.key) ? prev.filter(k => k !== l.key) : [...prev, l.key]) }}>
                 {l.flag} {l.label}
               </button>
             ))}
@@ -240,7 +239,7 @@ export default function Register({ user, onRegistered }: Props) {
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
             {REGIONS.map(r => (
               <button key={r.key} className={`chip ${region === r.key ? 'active' : ''}`}
-                onClick={() => setRegion(r.key)}>
+                onClick={() => { impact('light'); setRegion(r.key) }}>
                 {r.flag} {r.label}
               </button>
             ))}
@@ -254,8 +253,7 @@ export default function Register({ user, onRegistered }: Props) {
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
             {gamesData.map(g => (
               <button key={g.key} className={`chip ${selectedGames.includes(g.key) ? 'active' : ''}`}
-                onClick={() => setSelectedGames(prev =>
-                  prev.includes(g.key) ? prev.filter(k => k !== g.key) : [...prev, g.key])}>
+                onClick={() => { impact('light'); setSelectedGames(prev => prev.includes(g.key) ? prev.filter(k => k !== g.key) : [...prev, g.key]) }}>
                 {g.display}
               </button>
             ))}
@@ -384,12 +382,12 @@ export default function Register({ user, onRegistered }: Props) {
 
         <div style={{ display: 'flex', gap: 12, marginTop: 32 }}>
           {step > 0 && (
-            <button className="btn-secondary" onClick={() => setStep(s => s - 1)}
+            <button className="btn-secondary" onClick={() => { impact('light'); setStep(s => s - 1) }}
               style={{ flex: 0.3, padding: 14 }}>
               ← Back
             </button>
           )}
-          <button className="btn-primary" onClick={handleNext} disabled={saving}
+          <button className="btn-primary" onClick={() => { impact('medium'); handleNext() }} disabled={saving}
             style={{ flex: 1, padding: 14 }}>
             {saving ? 'Saving...' : isLast ? 'Complete Profile' : 'Continue →'}
           </button>

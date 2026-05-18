@@ -55,14 +55,21 @@ export default function MatchesList({ user }: Props) {
         <div style={{
           display: 'flex', flexDirection: 'column', alignItems: 'center',
           justifyContent: 'center', padding: '60px 24px', textAlign: 'center',
+          animation: 'fadeIn 0.5s ease-out',
         }}>
           <div style={{
-            width: 64, height: 64, borderRadius: '50%',
-            background: 'var(--muted)', display: 'flex', alignItems: 'center',
-            justifyContent: 'center', fontSize: 28, marginBottom: 16,
-          }}>💔</div>
-          <p style={{ color: 'var(--muted-foreground)' }}>
-            {search ? 'No matches found' : 'No matches yet. Keep exploring!'}
+            width: 80, height: 80, borderRadius: '50%',
+            background: 'linear-gradient(135deg, var(--pink), var(--primary))',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 36, marginBottom: 20, opacity: 0.8,
+          }}>
+            {search ? '🔍' : '💔'}
+          </div>
+          <h3 style={{ fontSize: 20, marginBottom: 8, color: 'var(--foreground)' }}>
+            {search ? 'Nothing found' : 'No matches yet'}
+          </h3>
+          <p style={{ color: 'var(--muted-foreground)', fontSize: 14, maxWidth: 280, lineHeight: 1.5 }}>
+            {search ? 'Try a different search term' : 'Keep exploring Discover to find your duo!'}
           </p>
         </div>
       )}

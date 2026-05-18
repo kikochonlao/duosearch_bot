@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom'
 import { api } from './api/client'
+import { impact } from './utils/haptic'
 import Welcome from './pages/Welcome'
 import Register from './pages/Register'
 import Discover from './pages/Discover'
@@ -21,7 +22,7 @@ const NAV_ITEMS = [
 
 function NavBtn({ label, icon, active, onClick }: { label: string; icon: string; active: boolean; onClick: () => void }) {
   return (
-    <button onClick={onClick} style={{
+    <button onClick={() => { impact('light'); onClick() }} style={{
       flex: 1, background: 'none', border: 'none', cursor: 'pointer',
       textAlign: 'center', padding: '8px 4px', borderRadius: 10,
       transition: 'all 0.2s', fontFamily: 'inherit',
@@ -63,12 +64,12 @@ export default function App() {
   useEffect(() => {
     const tg = window.Telegram?.WebApp
     const hideBack = location.pathname === '/discover' || location.pathname === '/welcome'
-    if (hideBack) tg?.BackButton?.hide()
-    else {
+    if (hideBack) { tg?.BackButton?.hide() } else {
+      const handler = () => navigate(-1)
       tg?.BackButton?.show()
-      tg?.BackButton?.onClick(() => navigate(-1))
+      tg?.BackButton?.onClick(handler)
+      return () => tg?.BackButton?.offClick(handler)
     }
-    return () => tg?.BackButton?.offClick(() => {})
   }, [location])
 
   if (loading) {
@@ -103,7 +104,7 @@ export default function App() {
         <Route path="*" element={<Welcome user={user} />} />
       </Routes>
 
-      {user?.is_registered && (
+      {user?.is_registered && !location.pathname.startsWith('/chat/') && !location.pathname.startsWith('/match/') && (
         <nav style={{
           position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 100,
           display: 'flex', alignItems: 'center',
