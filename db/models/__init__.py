@@ -6,3 +6,6 @@ from .report import Report
 from .chat_session import ChatSession
 from .message import Message
 from .skip import Skip
+from .lobby import Lobby
+from .lobby_member import LobbyMember
+from .lobby_message import LobbyMessage

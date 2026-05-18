@@ -12,9 +12,13 @@ import ChatList from './pages/ChatList'
 import Chat from './pages/Chat'
 import MatchScreen from './pages/MatchScreen'
 import Settings from './pages/Settings'
+import LobbyList from './pages/LobbyList'
+import LobbyCreate from './pages/LobbyCreate'
+import LobbyView from './pages/LobbyView'
 
 const NAV_ITEMS = [
   { path: '/discover', icon: '🔍', label: 'Discover' },
+  { path: '/lobbies', icon: '🎮', label: 'Lobbies' },
   { path: '/matches', icon: '❤️', label: 'Matches' },
   { path: '/chats', icon: '💬', label: 'Chats' },
   { path: '/profile', icon: '👤', label: 'Profile' },
@@ -94,6 +98,9 @@ export default function App() {
           if (tg?.initData) api.login(tg.initData).then(data => setUser(data))
         }} />} />
         <Route path="/discover" element={<Discover user={user} />} />
+        <Route path="/lobbies" element={<LobbyList user={user} />} />
+        <Route path="/lobbies/create" element={<LobbyCreate user={user} />} />
+        <Route path="/lobbies/:lobbyId" element={<LobbyView user={user} />} />
         <Route path="/profile" element={<ProfilePage user={user} />} />
         <Route path="/profile/edit" element={<EditProfile user={user} />} />
         <Route path="/matches" element={<MatchesList user={user} />} />
@@ -104,7 +111,7 @@ export default function App() {
         <Route path="*" element={<Welcome user={user} />} />
       </Routes>
 
-      {user?.is_registered && !location.pathname.startsWith('/chat/') && !location.pathname.startsWith('/match/') && (
+      {user?.is_registered && !location.pathname.startsWith('/chat/') && !location.pathname.startsWith('/match/') && !location.pathname.match(/^\/lobbies\/\d+$/) && (
         <nav style={{
           position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 100,
           display: 'flex', alignItems: 'center',

@@ -14,7 +14,7 @@ router = APIRouter()
 
 @router.get("/feed", response_model=DiscoverResponse)
 async def get_feed(
-    game: str,
+    game: str = '',
     auth: dict = Depends(get_telegram_user),
     session: AsyncSession = Depends(get_session),
 ):

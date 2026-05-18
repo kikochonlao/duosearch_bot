@@ -89,6 +89,53 @@ export interface ChatSessionInfo {
   created_at: string
 }
 
+export interface LobbyItem {
+  id: number
+  creator_id: number
+  game: string
+  title: string
+  description: string | null
+  max_players: number
+  is_public: boolean
+  status: string
+  member_count: number
+  creator_name: string
+  created_at: string
+}
+
+export interface LobbyMemberInfo {
+  id: number
+  user_id: number
+  name: string
+  telegram_id: number
+  role: string
+  status: string
+  joined_at: string
+}
+
+export interface LobbyDetail {
+  id: number
+  creator_id: number
+  game: string
+  title: string
+  description: string | null
+  max_players: number
+  is_public: boolean
+  status: string
+  member_count: number
+  creator_name: string
+  members: LobbyMemberInfo[]
+  created_at: string
+}
+
+export interface LobbyMessageInfo {
+  id: number
+  user_id: number
+  name: string
+  text: string
+  created_at: string
+}
+
 export const api = {
   login: (initData: string) =>
     request<{ ok: boolean; telegram_id: number; username: string | null; is_registered: boolean; user_id: number | null }>(
@@ -129,4 +176,37 @@ export const api = {
 
   getGames: () =>
     request<{ games: GameInfo[] }>('/games/'),
+
+  createLobby: (data: { game: string; title: string; description?: string; max_players?: number; is_public?: boolean }) =>
+    request<LobbyItem>('/lobbies', { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } }),
+
+  listLobbies: (game?: string) =>
+    request<{ lobbies: LobbyItem[] }>(`/lobbies?game=${encodeURIComponent(game || '')}`),
+
+  getMyLobbies: () =>
+    request<{ lobbies: LobbyItem[] }>('/lobbies/mine'),
+
+  getLobby: (id: number) =>
+    request<LobbyDetail>(`/lobbies/${id}`),
+
+  joinLobby: (id: number) =>
+    request<{ ok: boolean }>(`/lobbies/${id}/join`, { method: 'POST' }),
+
+  leaveLobby: (id: number) =>
+    request<{ ok: boolean }>(`/lobbies/${id}/leave`, { method: 'POST' }),
+
+  approveMember: (lobbyId: number, userId: number) =>
+    request<{ ok: boolean }>(`/lobbies/${lobbyId}/approve/${userId}`, { method: 'POST' }),
+
+  kickMember: (lobbyId: number, userId: number) =>
+    request<{ ok: boolean }>(`/lobbies/${lobbyId}/kick/${userId}`, { method: 'POST' }),
+
+  closeLobby: (id: number) =>
+    request<{ ok: boolean }>(`/lobbies/${id}/close`, { method: 'POST' }),
+
+  getLobbyMessages: (id: number) =>
+    request<LobbyMessageInfo[]>(`/lobbies/${id}/messages`),
+
+  sendLobbyMessage: (id: number, text: string) =>
+    request<LobbyMessageInfo>(`/lobbies/${id}/messages`, { method: 'POST', body: JSON.stringify({ text }), headers: { 'Content-Type': 'application/json' } }),
 }

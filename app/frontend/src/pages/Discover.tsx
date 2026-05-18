@@ -18,14 +18,10 @@ export default function Discover({ user }: Props) {
   const [animClass, setAnimClass] = useState('')
 
   useEffect(() => {
-    api.getGames().then(data => {
-      setGames(data.games)
-      if (data.games.length > 0) setSelectedGame(data.games[0].key)
-    })
+    api.getGames().then(data => setGames(data.games))
   }, [])
 
   useEffect(() => {
-    if (!selectedGame) return
     setLoading(true)
     setCurrentIdx(0)
     api.getFeed(selectedGame).then(data => {
@@ -160,13 +156,17 @@ export default function Discover({ user }: Props) {
             All clear! Try a different game or check back later
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center' }}>
-          {games.map(g => (
-            <button key={g.key} className={`chip ${selectedGame === g.key ? 'active' : ''}`}
-              onClick={() => { impact('light'); setSelectedGame(g.key) }}>
-              {g.display}
+            <button key="all" className={`chip ${selectedGame === '' ? 'active' : ''}`}
+              onClick={() => { impact('light'); setSelectedGame('') }}>
+              All
             </button>
-          ))}
-        </div>
+            {games.map(g => (
+              <button key={g.key} className={`chip ${selectedGame === g.key ? 'active' : ''}`}
+                onClick={() => { impact('light'); setSelectedGame(g.key) }}>
+                {g.display}
+              </button>
+            ))}
+          </div>
         </div>
       </main>
     )
@@ -178,15 +178,26 @@ export default function Discover({ user }: Props) {
       <div className="sticky-header">
         <h1 style={{ fontSize: 18, fontWeight: 600 }}>Discover</h1>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button style={{ background: 'none', border: 'none', color: 'var(--muted-foreground)', cursor: 'pointer', fontSize: 20 }}>⚙️</button>
+          {selectedGame && (
+            <span style={{
+              borderRadius: 8, background: 'rgba(197,84,212,0.12)', color: 'var(--primary)',
+              padding: '2px 8px', fontSize: 11, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4,
+            }}>
+              {games.find(g => g.key === selectedGame)?.display || selectedGame}
+            </span>
+          )}
         </div>
       </div>
 
       {/* Game filter chips */}
       <div style={{ display: 'flex', gap: 8, overflowX: 'auto', padding: '12px 16px', scrollbarWidth: 'none' }}>
+        <button key="all" className={`chip ${selectedGame === '' ? 'active' : ''}`}
+          onClick={() => { impact('light'); setSelectedGame('') }} style={{ whiteSpace: 'nowrap', flexShrink: 0 }}>
+          All
+        </button>
         {games.map(g => (
           <button key={g.key} className={`chip ${selectedGame === g.key ? 'active' : ''}`}
-            onClick={() => setSelectedGame(g.key)} style={{ whiteSpace: 'nowrap', flexShrink: 0 }}>
+            onClick={() => { impact('light'); setSelectedGame(g.key) }} style={{ whiteSpace: 'nowrap', flexShrink: 0 }}>
             {g.display}
           </button>
         ))}

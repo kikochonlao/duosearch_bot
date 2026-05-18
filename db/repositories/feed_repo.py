@@ -24,7 +24,7 @@ class FeedRepository:
             return None
         return db_to_domain(db_user)
 
-    async def get_candidates(self, telegram_id: int, game: str) -> list[User]:
+    async def get_candidates(self, telegram_id: int, game: str = '') -> list[User]:
         result = await self.session.execute(select(DBUser))
         all_users = result.scalars().all()
 
@@ -52,7 +52,7 @@ class FeedRepository:
                 continue
             if u.id in blocked_ids:
                 continue
-            if game not in u.get_games():
+            if game and game not in u.get_games():
                 continue
             candidates.append(u)
 
