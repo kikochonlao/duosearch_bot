@@ -23,6 +23,8 @@ class User(Base):
     games = Column(Text, nullable=False, default="{}")
     created_at = Column(DateTime, default=datetime.utcnow)
     is_banned = Column(Integer, nullable=False, default=0)
+    steam_id = Column(String, nullable=True)
+    blog = Column(Text, nullable=True)
 
     def set_games(self, games_data: dict[str, dict]):
         self.games = json.dumps(games_data, ensure_ascii=False)

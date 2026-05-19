@@ -32,6 +32,8 @@ def _user_to_profile_out(user: User) -> ProfileOut:
         looking_for=user.looking_for,
         games=games_out,
         is_banned=user.is_banned,
+        steam_id=getattr(user, 'steam_id', None),
+        blog=getattr(user, 'blog', None),
     )
 
 

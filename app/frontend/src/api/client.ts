@@ -48,6 +48,8 @@ export interface Profile {
   looking_for: string
   games: Record<string, { rank?: string; roles: Record<string, string> }>
   is_banned: number
+  steam_id: string | null
+  blog: string | null
 }
 
 export interface ProfileUpdate {
@@ -60,6 +62,14 @@ export interface ProfileUpdate {
   photo_url?: string
   looking_for?: string
   games?: Record<string, { rank?: string; roles: Record<string, string> }>
+  blog?: string
+}
+
+export interface SteamGame {
+  app_id: number
+  name: string
+  playtime_hours: number
+  logo_url: string | null
 }
 
 export interface Candidate {
@@ -150,6 +160,15 @@ export const api = {
 
   reportUser: (targetTelegramId: number, reason?: string) =>
     request<{ ok: boolean; auto_banned: boolean; total_reports: number }>('/profile/report', { method: 'POST', body: JSON.stringify({ target_telegram_id: targetTelegramId, reason }), headers: { 'Content-Type': 'application/json' } }),
+
+  connectSteam: (steamId: string) =>
+    request<{ ok: boolean; steam_id: string }>('/profile/steam/connect', { method: 'POST', body: JSON.stringify({ steam_id: steamId }), headers: { 'Content-Type': 'application/json' } }),
+
+  disconnectSteam: () =>
+    request<{ ok: boolean }>('/profile/steam/disconnect', { method: 'POST' }),
+
+  getSteamGames: () =>
+    request<{ games: SteamGame[] }>('/profile/steam/games'),
 
   login: (initData: string) =>
     request<{ ok: boolean; telegram_id: number; username: string | null; is_registered: boolean; user_id: number | null }>(

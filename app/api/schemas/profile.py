@@ -7,6 +7,13 @@ class GameProfileSchema(BaseModel):
     roles: dict[str, str] = {}
 
 
+class SteamGameOut(BaseModel):
+    app_id: int
+    name: str
+    playtime_hours: float
+    logo_url: Optional[str] = None
+
+
 class ProfileOut(BaseModel):
     id: int
     telegram_id: int
@@ -21,6 +28,8 @@ class ProfileOut(BaseModel):
     looking_for: str
     games: dict[str, GameProfileSchema]
     is_banned: int
+    steam_id: Optional[str] = None
+    blog: Optional[str] = None
 
 
 class ProfileUpdate(BaseModel):
@@ -33,8 +42,13 @@ class ProfileUpdate(BaseModel):
     photo_url: Optional[str] = None
     looking_for: Optional[str] = None
     games: Optional[dict[str, GameProfileSchema]] = None
+    blog: Optional[str] = None
 
 
 class BlockReportBody(BaseModel):
     target_telegram_id: int
     reason: Optional[str] = None
+
+
+class SteamConnectBody(BaseModel):
+    steam_id: str

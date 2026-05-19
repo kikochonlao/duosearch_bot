@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { api, Profile, GameInfo } from '../api/client'
+import { api, Profile, GameInfo, SteamGame } from '../api/client'
+import { impact } from '../utils/haptic'
 
 interface Props {
   user: { telegram_id: number; username: string | null; is_registered: boolean } | null
@@ -11,14 +12,46 @@ export default function ProfilePage({ user }: Props) {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [games, setGames] = useState<GameInfo[]>([])
   const [loading, setLoading] = useState(true)
+  const [steamGames, setSteamGames] = useState<SteamGame[]>([])
+  const [steamLoading, setSteamLoading] = useState(false)
+  const [showSteamInput, setShowSteamInput] = useState(false)
+  const [steamInput, setSteamInput] = useState('')
 
   useEffect(() => {
     Promise.all([api.getProfile(), api.getGames()]).then(([p, g]) => {
       setProfile(p)
       setGames(g.games)
       setLoading(false)
+      if (p.steam_id) {
+        setSteamLoading(true)
+        api.getSteamGames().then(res => setSteamGames(res.games)).catch(() => {}).finally(() => setSteamLoading(false))
+      }
     }).catch(() => setLoading(false))
   }, [])
+
+  const handleConnectSteam = async () => {
+    if (!steamInput.trim()) return
+    impact('light')
+    try {
+      const res = await api.connectSteam(steamInput.trim())
+      setProfile(prev => prev ? { ...prev, steam_id: res.steam_id } : prev)
+      setShowSteamInput(false)
+      setSteamInput('')
+      setSteamLoading(true)
+      const sg = await api.getSteamGames()
+      setSteamGames(sg.games)
+    } catch (e: any) { alert(e.message) }
+    finally { setSteamLoading(false) }
+  }
+
+  const handleDisconnectSteam = async () => {
+    if (!confirm('Disconnect Steam account?')) return
+    try {
+      await api.disconnectSteam()
+      setProfile(prev => prev ? { ...prev, steam_id: null } : prev)
+      setSteamGames([])
+    } catch (e: any) { alert(e.message) }
+  }
 
   if (loading) {
     return (
@@ -43,11 +76,7 @@ export default function ProfilePage({ user }: Props) {
     )
   }
 
-  const stats = {
-    matches: Object.keys(profile.games).length.toString(),
-    duos: '0',
-    streak: 'New',
-  }
+  const matchCount = Object.keys(profile.games).length.toString()
 
   return (
     <main style={{ minHeight: '100vh', background: 'var(--background)', paddingBottom: 80 }}>
@@ -115,9 +144,9 @@ export default function ProfilePage({ user }: Props) {
         background: 'var(--card)', padding: 16,
       }}>
         {[
-          { value: stats.matches, label: 'Matches' },
-          { value: stats.duos, label: 'Duos' },
-          { value: stats.streak, label: 'Streak' },
+          { value: matchCount, label: 'Games' },
+          { value: steamGames.length.toString() || '—', label: 'Steam games' },
+          { value: profile.steam_id ? '🟢' : '⚪', label: 'Steam' },
         ].map(s => (
           <div key={s.label} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
             <span style={{ fontSize: 24, fontWeight: 700 }}>{s.value}</span>
@@ -125,6 +154,25 @@ export default function ProfilePage({ user }: Props) {
           </div>
         ))}
       </div>
+
+      {/* Blog */}
+      {profile.blog && (
+        <section style={{ padding: '24px 16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <h3 className="section-title" style={{ marginBottom: 0 }}>📝 My blog</h3>
+            <button onClick={() => navigate('/profile/edit')}
+              style={{ background: 'none', border: 'none', color: 'var(--muted-foreground)', cursor: 'pointer', fontSize: 13 }}>
+              Edit
+            </button>
+          </div>
+          <div style={{
+            fontSize: 14, lineHeight: 1.6, color: 'var(--foreground)',
+            whiteSpace: 'pre-wrap',
+          }}>
+            {profile.blog}
+          </div>
+        </section>
+      )}
 
       {/* About me */}
       <section style={{ padding: '24px 16px' }}>
@@ -150,6 +198,71 @@ export default function ProfilePage({ user }: Props) {
         </div>
       </section>
 
+      {/* Steam */}
+      <section style={{ padding: '0 16px 24px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+          <h3 className="section-title" style={{ marginBottom: 0 }}>Steam</h3>
+          {profile.steam_id ? (
+            <button onClick={handleDisconnectSteam}
+              style={{ background: 'none', border: 'none', color: 'var(--destructive)', cursor: 'pointer', fontSize: 13 }}>
+              Disconnect
+            </button>
+          ) : (
+            <button onClick={() => setShowSteamInput(p => !p)}
+              style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', fontSize: 13 }}>
+              {showSteamInput ? 'Cancel' : 'Connect'}
+            </button>
+          )}
+        </div>
+        {showSteamInput && !profile.steam_id && (
+          <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+            <input className="input-field" value={steamInput} onChange={e => setSteamInput(e.target.value)}
+              placeholder="Enter Steam ID (e.g. 7656119...)" style={{ flex: 1, fontSize: 14 }} />
+            <button onClick={handleConnectSteam} disabled={!steamInput.trim()}
+              style={{
+                padding: '10px 16px', borderRadius: 10, border: 'none',
+                background: 'var(--primary)', color: '#fff', cursor: 'pointer',
+                fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap',
+              }}>
+              Save
+            </button>
+          </div>
+        )}
+        {steamLoading && <div className="skeleton" style={{ height: 60, borderRadius: 8 }} />}
+        {steamGames.length > 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {steamGames.slice(0, 10).map(sg => {
+              const matchedGame = games.find(g => sg.name.toLowerCase().includes(g.key) || g.key.includes(sg.name.toLowerCase().split(' ')[0]?.toLowerCase() || ''))
+              return (
+                <div key={sg.app_id} style={{
+                  display: 'flex', alignItems: 'center', gap: 10,
+                  padding: 10, borderRadius: 10, background: 'var(--secondary)',
+                }}>
+                  {sg.logo_url ? (
+                    <img src={sg.logo_url} alt="" style={{ width: 40, height: 40, borderRadius: 6, objectFit: 'cover' }}
+                      onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none' }} />
+                  ) : (
+                    <div style={{ width: 40, height: 40, borderRadius: 6, background: 'var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>🎮</div>
+                  )}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 500, fontSize: 14 }}>{sg.name}</div>
+                    <div style={{ color: 'var(--muted-foreground)', fontSize: 12 }}>{sg.playtime_hours} hours played</div>
+                  </div>
+                  {matchedGame && (
+                    <span style={{ fontSize: 11, color: 'var(--green)', background: 'rgba(77,212,122,0.12)', padding: '2px 6px', borderRadius: 6 }}>Matched</span>
+                  )}
+                </div>
+              )
+            })}
+            {steamGames.length > 10 && (
+              <p style={{ color: 'var(--muted-foreground)', fontSize: 12, textAlign: 'center' }}>
+                +{steamGames.length - 10} more games
+              </p>
+            )}
+          </div>
+        )}
+      </section>
+
       {/* Games */}
       <section style={{ padding: '0 16px 24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
@@ -158,10 +271,12 @@ export default function ProfilePage({ user }: Props) {
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
           {Object.entries(profile.games).map(([gk, gp]) => {
             const gi = games.find(g => g.key === gk)
+            const steamInfo = steamGames.find(sg => sg.name.toLowerCase().includes(gk))
             return (
               <span key={gk} className="chip active" style={{ cursor: 'default' }}>
                 {gi?.display || gk}
                 {gp.rank && <span style={{ color: 'var(--gold)', marginLeft: 4 }}>{gp.rank}</span>}
+                {steamInfo && <span style={{ color: 'var(--muted-foreground)', marginLeft: 4, fontSize: 11 }}>({steamInfo.playtime_hours}h)</span>}
               </span>
             )
           })}

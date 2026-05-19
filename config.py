@@ -11,6 +11,7 @@ class Settings(BaseModel):
     ADMIN_IDS: str = ""
     ECHO_SQL: bool = False
     MINI_APP_URL: str = "https://frontend-ivory-nine-61.vercel.app/app"
+    STEAM_API_KEY: str = ""
 
     @property
     def admin_ids_list(self) -> list[int]:
@@ -23,6 +24,7 @@ settings = Settings(
     ADMIN_IDS=os.getenv("ADMIN_IDS", ""),
     ECHO_SQL=os.getenv("ECHO_SQL", "false").lower() in ("1", "true", "yes"),
     MINI_APP_URL=os.getenv("MINI_APP_URL", "https://frontend-ivory-nine-61.vercel.app/app"),
+    STEAM_API_KEY=os.getenv("STEAM_API_KEY", ""),
 )
 
 # Ensure async DSN for PostgreSQL

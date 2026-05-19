@@ -4,11 +4,12 @@ from sqlalchemy import select
 
 from app.api.deps.auth import get_telegram_user, resolve_telegram_id
 from app.api.deps.db import get_session
-from app.api.schemas.profile import ProfileOut, ProfileUpdate, GameProfileSchema, BlockReportBody
+from app.api.schemas.profile import ProfileOut, ProfileUpdate, GameProfileSchema, BlockReportBody, SteamConnectBody
 from db.models.user import User
 from db.mappers import db_to_domain
 from services.user_service import upsert_user
 from db.repositories.report_repo import ReportRepository
+from services.steam_service import verify_steam_id, get_steam_games
 
 router = APIRouter()
 
@@ -32,6 +33,8 @@ def _profile_to_out(user) -> ProfileOut:
         looking_for=user.looking_for,
         games=games_out,
         is_banned=user.is_banned,
+        steam_id=user.steam_id,
+        blog=user.blog,
     )
 
 
@@ -204,3 +207,65 @@ async def report_user(
     repo = ReportRepository(session)
     auto_banned, total = await repo.add_report(telegram_id, body.target_telegram_id, reason)
     return {"ok": True, "auto_banned": auto_banned, "total_reports": total}
+
+
+@router.post("/steam/connect")
+async def connect_steam(
+    body: SteamConnectBody,
+    auth: dict = Depends(get_telegram_user),
+    session: AsyncSession = Depends(get_session),
+):
+    telegram_id = await resolve_telegram_id(auth)
+    if not telegram_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No telegram_id")
+
+    steam_id = body.steam_id
+    valid = await verify_steam_id(steam_id)
+    if not valid:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid Steam ID or Steam API not configured")
+
+    result = await session.execute(select(User).where(User.telegram_id == telegram_id))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    user.steam_id = steam_id
+    await session.commit()
+    return {"ok": True, "steam_id": steam_id}
+
+
+@router.post("/steam/disconnect")
+async def disconnect_steam(
+    auth: dict = Depends(get_telegram_user),
+    session: AsyncSession = Depends(get_session),
+):
+    telegram_id = await resolve_telegram_id(auth)
+    if not telegram_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No telegram_id")
+
+    result = await session.execute(select(User).where(User.telegram_id == telegram_id))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    user.steam_id = None
+    await session.commit()
+    return {"ok": True}
+
+
+@router.get("/steam/games")
+async def steam_games(
+    auth: dict = Depends(get_telegram_user),
+    session: AsyncSession = Depends(get_session),
+):
+    telegram_id = await resolve_telegram_id(auth)
+    if not telegram_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No telegram_id")
+
+    result = await session.execute(select(User).where(User.telegram_id == telegram_id))
+    user = result.scalar_one_or_none()
+    if not user or not user.steam_id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Steam not connected")
+
+    games = await get_steam_games(user.steam_id)
+    return {"games": games}
