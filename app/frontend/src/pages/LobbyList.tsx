@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api, LobbyItem, GameInfo } from '../api/client'
 import { impact } from '../utils/haptic'
@@ -12,19 +12,31 @@ export default function LobbyList({ user }: Props) {
   const [lobbies, setLobbies] = useState<LobbyItem[]>([])
   const [games, setGames] = useState<GameInfo[]>([])
   const [selectedGame, setSelectedGame] = useState('')
+  const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>()
 
   useEffect(() => {
     api.getGames().then(data => setGames(data.games))
   }, [])
 
-  useEffect(() => {
+  const fetchLobbies = (game: string, q: string) => {
     setLoading(true)
-    api.listLobbies(selectedGame).then(data => {
+    api.listLobbies(game, q).then(data => {
       setLobbies(data.lobbies)
       setLoading(false)
     }).catch(() => setLoading(false))
+  }
+
+  useEffect(() => {
+    fetchLobbies(selectedGame, search)
   }, [selectedGame])
+
+  const handleSearch = (value: string) => {
+    setSearch(value)
+    clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => fetchLobbies(selectedGame, value), 300)
+  }
 
   return (
     <main style={{ minHeight: '100vh', background: 'var(--background)', paddingBottom: 80 }}>
@@ -51,6 +63,8 @@ export default function LobbyList({ user }: Props) {
             </button>
           ))}
         </div>
+        <input className="input-field" value={search} onChange={e => handleSearch(e.target.value)}
+          placeholder="🔍 Search lobbies..." style={{ borderRadius: 10, fontSize: 14 }} />
       </div>
 
       {loading ? (

@@ -15,8 +15,10 @@ export default function Chat({ user }: Props) {
   const [loading, setLoading] = useState(true)
   const [matchInfo, setMatchInfo] = useState<MatchItem | null>(null)
   const [sending, setSending] = useState(false)
+  const [showMenu, setShowMenu] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const menuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!matchId) return
@@ -27,6 +29,14 @@ export default function Chat({ user }: Props) {
       setLoading(false)
     }).catch(() => setLoading(false))
   }, [matchId])
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setShowMenu(false)
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])
 
@@ -40,6 +50,30 @@ export default function Chat({ user }: Props) {
     }, 1500)
     return () => clearInterval(interval)
   }, [matchId, messages.length])
+
+  const handleBlock = async () => {
+    if (!matchInfo) return
+    const targetId = matchInfo.matched_user.telegram_id
+    if (!confirm(`Block ${matchInfo.matched_user.name}?`)) return
+    try {
+      await api.blockUser(targetId)
+      alert('User blocked')
+      navigate('/chats')
+    } catch (e: any) { alert(e.message) }
+    setShowMenu(false)
+  }
+
+  const handleReport = async () => {
+    if (!matchInfo) return
+    const reason = prompt('Reason for report:')
+    if (!reason) return
+    try {
+      const res = await api.reportUser(matchInfo.matched_user.telegram_id, reason)
+      alert(res.auto_banned ? 'User was banned due to multiple reports' : 'Report submitted')
+      navigate('/chats')
+    } catch (e: any) { alert(e.message) }
+    setShowMenu(false)
+  }
 
   const handleSend = async () => {
     if (!text.trim() || !matchId || sending) return
@@ -55,6 +89,13 @@ export default function Chat({ user }: Props) {
 
   if (loading) return <div className="page"><div className="skeleton" style={{ height: '70vh' }} /></div>
 
+  const menuItemStyle: React.CSSProperties = {
+    display: 'block', width: '100%', padding: '12px 16px', border: 'none',
+    background: 'none', color: 'var(--tg-text)', fontSize: 14, textAlign: 'left',
+    cursor: 'pointer', fontFamily: 'inherit',
+    borderBottom: '1px solid var(--tg-border)',
+  }
+
   const otherName = matchInfo?.matched_user.name || 'Chat'
   const myTgId = user?.telegram_id
 
@@ -62,12 +103,29 @@ export default function Chat({ user }: Props) {
     <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 80px)', padding: '0 12px' }}>
       <div style={{
         display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0',
-        borderBottom: '1px solid var(--tg-border)',
+        borderBottom: '1px solid var(--tg-border)', position: 'relative',
       }}>
         <div className="avatar sm">{otherName[0]}</div>
-        <div>
+        <div style={{ flex: 1 }}>
           <div style={{ fontWeight: 600, fontSize: 15 }}>{otherName}</div>
           <div style={{ color: 'var(--tg-hint)', fontSize: 12 }}>Online</div>
+        </div>
+        <div ref={menuRef} style={{ position: 'relative' }}>
+          <button onClick={() => { impact('light'); setShowMenu(p => !p) }}
+            style={{ background: 'none', border: 'none', color: 'var(--tg-hint)', cursor: 'pointer', fontSize: 20, padding: '4px 8px' }}>
+            ⋯
+          </button>
+          {showMenu && (
+            <div style={{
+              position: 'absolute', right: 0, top: '100%', zIndex: 100,
+              background: 'var(--tg-secondary-bg)', borderRadius: 12,
+              border: '1px solid var(--tg-border)', overflow: 'hidden',
+              minWidth: 160, boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
+            }}>
+              <button onClick={handleBlock} style={menuItemStyle}>🚫 Block user</button>
+              <button onClick={handleReport} style={menuItemStyle}>⚠️ Report user</button>
+            </div>
+          )}
         </div>
       </div>
 

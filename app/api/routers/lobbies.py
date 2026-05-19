@@ -52,6 +52,7 @@ async def create_lobby(
 @router.get("", response_model=LobbyListResponse)
 async def list_lobbies(
     game: str = '',
+    search: str = '',
     auth: dict = Depends(get_telegram_user),
     session: AsyncSession = Depends(get_session),
 ):
@@ -60,7 +61,7 @@ async def list_lobbies(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No telegram_id")
 
     repo = LobbyRepository(session)
-    lobbies = await repo.list_open_lobbies(game)
+    lobbies = await repo.list_open_lobbies(game, search)
 
     return LobbyListResponse(lobbies=[
         LobbyOut(

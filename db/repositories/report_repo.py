@@ -91,3 +91,42 @@ class ReportRepository:
         self.session.add(Block(user_id=blocker.id, blocked_user_id=blocked.id))
         await self.session.commit()
         return True
+
+    async def unblock_user(self, blocker_id: int, blocked_id: int) -> bool:
+        blocker = await self._get_user_by_telegram(blocker_id)
+        blocked = await self._get_user_by_telegram(blocked_id)
+
+        if not blocker or not blocked:
+            return False
+
+        existing = await self.session.execute(
+            select(Block).where(
+                Block.user_id == blocker.id,
+                Block.blocked_user_id == blocked.id
+            )
+        )
+        block = existing.scalar_one_or_none()
+        if not block:
+            return False
+
+        await self.session.delete(block)
+        await self.session.commit()
+        return True
+
+    async def get_blocked_users(self, user_id: int) -> list[DBUser]:
+        user = await self._get_user_by_telegram(user_id)
+        if not user:
+            return []
+
+        result = await self.session.execute(
+            select(Block).where(Block.user_id == user.id)
+        )
+        blocks = result.scalars().all()
+        blocked_ids = [b.blocked_user_id for b in blocks]
+        if not blocked_ids:
+            return []
+
+        users_result = await self.session.execute(
+            select(DBUser).where(DBUser.id.in_(blocked_ids))
+        )
+        return list(users_result.scalars().all())

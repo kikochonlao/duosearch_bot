@@ -51,10 +51,14 @@ export default function ChatList({ user }: Props) {
           <div className="avatar">
             {s.other_user.name[0].toUpperCase()}
           </div>
-          <div style={{ flex: 1 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontWeight: 600 }}>{s.other_user.name}</div>
-            <div style={{ color: 'var(--tg-hint)', fontSize: 13 }}>
-              {s.is_active ? 'Active now' : 'Chat closed'}
+            <div style={{
+              color: 'var(--tg-hint)', fontSize: 13,
+              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+              maxWidth: '100%',
+            }}>
+              {s.last_message || (s.is_active ? 'Active now' : 'Chat closed')}
             </div>
           </div>
         </div>

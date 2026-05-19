@@ -33,3 +33,8 @@ class ProfileUpdate(BaseModel):
     photo_url: Optional[str] = None
     looking_for: Optional[str] = None
     games: Optional[dict[str, GameProfileSchema]] = None
+
+
+class BlockReportBody(BaseModel):
+    target_telegram_id: int
+    reason: Optional[str] = None

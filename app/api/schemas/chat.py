@@ -20,3 +20,5 @@ class ChatSessionOut(BaseModel):
     other_user: dict
     is_active: bool
     created_at: datetime
+    last_message: Optional[str] = None
+    last_message_at: Optional[datetime] = None

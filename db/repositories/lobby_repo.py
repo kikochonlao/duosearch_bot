@@ -46,10 +46,12 @@ class LobbyRepository:
         await self.session.refresh(lobby)
         return lobby
 
-    async def list_open_lobbies(self, game: str = "") -> list[tuple[Lobby, int, str]]:
+    async def list_open_lobbies(self, game: str = "", search: str = "") -> list[tuple[Lobby, int, str]]:
         query = select(Lobby).where(Lobby.status == "open").order_by(Lobby.created_at.desc())
         if game:
             query = query.where(Lobby.game == game)
+        if search:
+            query = query.where(Lobby.title.ilike(f"%{search}%"))
         result = await self.session.execute(query)
         lobbies = result.scalars().all()
 

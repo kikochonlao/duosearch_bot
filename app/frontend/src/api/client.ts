@@ -87,6 +87,8 @@ export interface ChatSessionInfo {
   other_user: { id: number; telegram_id: number; name: string }
   is_active: boolean
   created_at: string
+  last_message?: string
+  last_message_at?: string
 }
 
 export interface LobbyItem {
@@ -137,6 +139,18 @@ export interface LobbyMessageInfo {
 }
 
 export const api = {
+  blockUser: (targetTelegramId: number) =>
+    request<{ ok: boolean }>('/profile/block', { method: 'POST', body: JSON.stringify({ target_telegram_id: targetTelegramId }), headers: { 'Content-Type': 'application/json' } }),
+
+  unblockUser: (targetTelegramId: number) =>
+    request<{ ok: boolean }>('/profile/unblock', { method: 'POST', body: JSON.stringify({ target_telegram_id: targetTelegramId }), headers: { 'Content-Type': 'application/json' } }),
+
+  getBlockedUsers: () =>
+    request<Profile[]>('/profile/blocked'),
+
+  reportUser: (targetTelegramId: number, reason?: string) =>
+    request<{ ok: boolean; auto_banned: boolean; total_reports: number }>('/profile/report', { method: 'POST', body: JSON.stringify({ target_telegram_id: targetTelegramId, reason }), headers: { 'Content-Type': 'application/json' } }),
+
   login: (initData: string) =>
     request<{ ok: boolean; telegram_id: number; username: string | null; is_registered: boolean; user_id: number | null }>(
       `/auth/login?init_data=${encodeURIComponent(initData)}`, { method: 'POST' }
@@ -180,8 +194,8 @@ export const api = {
   createLobby: (data: { game: string; title: string; description?: string; max_players?: number; is_public?: boolean }) =>
     request<LobbyItem>('/lobbies', { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } }),
 
-  listLobbies: (game?: string) =>
-    request<{ lobbies: LobbyItem[] }>(`/lobbies?game=${encodeURIComponent(game || '')}`),
+  listLobbies: (game?: string, search?: string) =>
+    request<{ lobbies: LobbyItem[] }>(`/lobbies?game=${encodeURIComponent(game || '')}&search=${encodeURIComponent(search || '')}`),
 
   getMyLobbies: () =>
     request<{ lobbies: LobbyItem[] }>('/lobbies/mine'),

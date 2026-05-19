@@ -4,10 +4,11 @@ from sqlalchemy import select
 
 from app.api.deps.auth import get_telegram_user, resolve_telegram_id
 from app.api.deps.db import get_session
-from app.api.schemas.profile import ProfileOut, ProfileUpdate, GameProfileSchema
+from app.api.schemas.profile import ProfileOut, ProfileUpdate, GameProfileSchema, BlockReportBody
 from db.models.user import User
 from db.mappers import db_to_domain
 from services.user_service import upsert_user
+from db.repositories.report_repo import ReportRepository
 
 router = APIRouter()
 
@@ -133,3 +134,73 @@ async def update_profile(
     await session.refresh(user)
 
     return _profile_to_out(user)
+
+
+@router.post("/block")
+async def block_user(
+    body: BlockReportBody,
+    auth: dict = Depends(get_telegram_user),
+    session: AsyncSession = Depends(get_session),
+):
+    telegram_id = await resolve_telegram_id(auth)
+    if not telegram_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No telegram_id")
+
+    if telegram_id == body.target_telegram_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot block yourself")
+
+    repo = ReportRepository(session)
+    ok = await repo.block_user(telegram_id, body.target_telegram_id)
+    if not ok:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Already blocked or user not found")
+    return {"ok": True}
+
+
+@router.post("/unblock")
+async def unblock_user(
+    body: BlockReportBody,
+    auth: dict = Depends(get_telegram_user),
+    session: AsyncSession = Depends(get_session),
+):
+    telegram_id = await resolve_telegram_id(auth)
+    if not telegram_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No telegram_id")
+
+    repo = ReportRepository(session)
+    ok = await repo.unblock_user(telegram_id, body.target_telegram_id)
+    if not ok:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Block not found or user not found")
+    return {"ok": True}
+
+
+@router.get("/blocked", response_model=list[ProfileOut])
+async def get_blocked_users(
+    auth: dict = Depends(get_telegram_user),
+    session: AsyncSession = Depends(get_session),
+):
+    telegram_id = await resolve_telegram_id(auth)
+    if not telegram_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No telegram_id")
+
+    repo = ReportRepository(session)
+    users = await repo.get_blocked_users(telegram_id)
+    return [_profile_to_out(u) for u in users]
+
+
+@router.post("/report")
+async def report_user(
+    body: BlockReportBody,
+    auth: dict = Depends(get_telegram_user),
+    session: AsyncSession = Depends(get_session),
+):
+    telegram_id = await resolve_telegram_id(auth)
+    if not telegram_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No telegram_id")
+
+    if telegram_id == body.target_telegram_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot report yourself")
+
+    reason = body.reason or "No reason provided"
+    repo = ReportRepository(session)
+    auto_banned, total = await repo.add_report(telegram_id, body.target_telegram_id, reason)
+    return {"ok": True, "auto_banned": auto_banned, "total_reports": total}

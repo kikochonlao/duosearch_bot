@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, or_
+from sqlalchemy import select, or_, desc
 
 from app.api.deps.auth import get_telegram_user, resolve_telegram_id
 from app.api.deps.db import get_session
@@ -43,6 +43,13 @@ async def get_chat_sessions(
         other = await session.get(User, other_id)
         if not other:
             continue
+
+        last_msg = await session.execute(
+            select(Message).where(Message.match_id == cs.match_id)
+            .order_by(desc(Message.created_at)).limit(1)
+        )
+        lm = last_msg.scalar_one_or_none()
+
         output.append(ChatSessionOut(
             id=cs.id,
             match_id=cs.match_id,
@@ -53,6 +60,8 @@ async def get_chat_sessions(
             },
             is_active=cs.is_active,
             created_at=cs.created_at,
+            last_message=lm.text if lm else None,
+            last_message_at=lm.created_at if lm else None,
         ))
 
     return output

@@ -27,6 +27,8 @@ def _user_to_profile_out(user: User) -> ProfileOut:
         gender=user.gender,
         language=user.language,
         region=user.region,
+        bio=user.bio,
+        photo_url=user.photo_url,
         looking_for=user.looking_for,
         games=games_out,
         is_banned=user.is_banned,
