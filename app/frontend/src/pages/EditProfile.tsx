@@ -27,6 +27,7 @@ export default function EditProfile({ user }: Props) {
   const [languages, setLanguages] = useState<string[]>([])
   const [region, setRegion] = useState('cis')
   const [photoUrl, setPhotoUrl] = useState<string | null>(null)
+  const [blog, setBlog] = useState('')
   const [error, setError] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [selectedGames, setSelectedGames] = useState<string[]>([])
@@ -40,6 +41,7 @@ export default function EditProfile({ user }: Props) {
       setName(p.name); setAge(p.age); setGender(p.gender)
       setLanguages(p.language ? p.language.split(',') : ['ru']); setRegion(p.region)
       setPhotoUrl(p.photo_url)
+      setBlog(p.blog || '')
 
       const gameKeys = Object.keys(p.games || {})
       setSelectedGames(gameKeys)
@@ -105,6 +107,7 @@ export default function EditProfile({ user }: Props) {
       await api.updateProfile({
         name, age: age as number, gender, language: languages.join(','), region,
         photo_url: photoUrl || undefined,
+        blog: blog || undefined,
         games: buildGamesPayload(),
       })
       navigate('/profile')
@@ -285,6 +288,17 @@ export default function EditProfile({ user }: Props) {
             ))}
           </select>
         </div>
+      </div>
+
+      {/* Blog */}
+      <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 20 }}>
+        <label style={{ fontSize: 16, fontWeight: 600, marginBottom: 4 }}>📝 Game blog</label>
+        <p style={{ fontSize: 12, color: 'var(--muted-foreground)', marginBottom: 4 }}>
+          Write about your gaming experience, achievements, or what you're looking for
+        </p>
+        <textarea className="input-field" value={blog} onChange={e => setBlog(e.target.value)}
+          placeholder="Tell your gaming story..."
+          rows={4} style={{ resize: 'vertical', fontFamily: 'inherit', lineHeight: 1.5, fontSize: 14 }} />
       </div>
 
       {/* Games section */}
