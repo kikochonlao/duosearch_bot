@@ -105,10 +105,13 @@ export default function Chat({ user }: Props) {
         display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0',
         borderBottom: '1px solid var(--tg-border)', position: 'relative',
       }}>
-        <div className="avatar sm">{otherName[0]}</div>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: 600, fontSize: 15 }}>{otherName}</div>
-          <div style={{ color: 'var(--tg-hint)', fontSize: 12 }}>Online</div>
+        <div onClick={() => matchInfo && navigate(`/user/${matchInfo.matched_user.telegram_id}`, { state: { profile: matchInfo.matched_user } })}
+          style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', flex: 1 }}>
+          <div className="avatar sm">{otherName[0]}</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 600, fontSize: 15 }}>{otherName}</div>
+            <div style={{ color: 'var(--tg-hint)', fontSize: 12 }}>Online</div>
+          </div>
         </div>
         <div ref={menuRef} style={{ position: 'relative' }}>
           <button onClick={() => { impact('light'); setShowMenu(p => !p) }}

@@ -178,6 +178,9 @@ export const api = {
   getProfile: () =>
     request<Profile>('/profile/'),
 
+  getUserProfile: (telegramId: number) =>
+    request<Profile>(`/profile/by-telegram/${telegramId}`),
+
   createProfile: (data: ProfileUpdate) =>
     request<Profile>('/profile/', { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } }),
 

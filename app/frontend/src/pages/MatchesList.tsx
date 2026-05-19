@@ -76,7 +76,7 @@ export default function MatchesList({ user }: Props) {
 
       {filtered.map(m => (
         <div key={m.id}
-          onClick={() => navigate(`/chat/${m.id}`)}
+          onClick={() => navigate(`/user/${m.matched_user.telegram_id}`, { state: { profile: m.matched_user } })}
           style={{
             display: 'flex', alignItems: 'center', gap: 12,
             padding: '12px 16px', borderBottom: '1px solid var(--border)',

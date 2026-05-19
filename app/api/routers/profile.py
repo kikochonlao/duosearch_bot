@@ -54,6 +54,23 @@ async def get_profile(
     return _profile_to_out(user)
 
 
+@router.get("/by-telegram/{target_telegram_id}", response_model=ProfileOut)
+async def get_user_profile(
+    target_telegram_id: int,
+    auth: dict = Depends(get_telegram_user),
+    session: AsyncSession = Depends(get_session),
+):
+    await resolve_telegram_id(auth)
+
+    result = await session.execute(select(User).where(User.telegram_id == target_telegram_id))
+    user = result.scalar_one_or_none()
+
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    return _profile_to_out(user)
+
+
 @router.post("/", response_model=ProfileOut)
 async def create_or_update_profile(
     profile: ProfileUpdate,

@@ -12,6 +12,7 @@ import ChatList from './pages/ChatList'
 import Chat from './pages/Chat'
 import MatchScreen from './pages/MatchScreen'
 import Settings from './pages/Settings'
+import UserProfile from './pages/UserProfile'
 import LobbyList from './pages/LobbyList'
 import LobbyCreate from './pages/LobbyCreate'
 import LobbyView from './pages/LobbyView'
@@ -132,6 +133,7 @@ export default function App() {
         <Route path="/chat/:matchId" element={<Chat user={user} />} />
         <Route path="/match/:matchId" element={<MatchScreen user={user} />} />
         <Route path="/settings" element={<Settings user={user} />} />
+        <Route path="/user/:telegramId" element={<UserProfile user={user} />} />
         <Route path="*" element={<Welcome user={user} />} />
       </Routes>
 
