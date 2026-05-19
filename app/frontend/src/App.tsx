@@ -16,6 +16,8 @@ import LobbyList from './pages/LobbyList'
 import LobbyCreate from './pages/LobbyCreate'
 import LobbyView from './pages/LobbyView'
 
+const MAINTENANCE = true
+
 const NAV_ITEMS = [
   { path: '/discover', icon: '🔍', label: 'Discover' },
   { path: '/lobbies', icon: '🎮', label: 'Lobbies' },
@@ -75,6 +77,28 @@ export default function App() {
       return () => tg?.BackButton?.offClick(handler)
     }
   }, [location])
+
+  if (MAINTENANCE) {
+    return (
+      <div style={{
+        minHeight: '100vh', display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center', gap: 16,
+        background: 'var(--background)', color: 'var(--foreground)',
+        padding: 24, textAlign: 'center',
+      }}>
+        <div style={{
+          width: 80, height: 80, borderRadius: '50%',
+          background: 'linear-gradient(135deg, var(--primary), var(--accent))',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 36, marginBottom: 8, opacity: 0.8,
+        }}>🚧</div>
+        <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 8 }}>Coming Soon</h2>
+        <p style={{ color: 'var(--muted-foreground)', fontSize: 14, maxWidth: 280, lineHeight: 1.5 }}>
+          Mini app is under development. We'll be back soon!
+        </p>
+      </div>
+    )
+  }
 
   if (loading) {
     return (
