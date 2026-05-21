@@ -187,8 +187,15 @@ export const api = {
   updateProfile: (data: ProfileUpdate) =>
     request<Profile>('/profile/', { method: 'PATCH', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } }),
 
-  getFeed: (game: string) =>
-    request<{ candidates: Candidate[]; total: number }>(`/discover/feed?game=${encodeURIComponent(game)}`),
+  getFeed: (game: string, gender?: string, region?: string, ageMin?: number, ageMax?: number) => {
+    const params = new URLSearchParams()
+    params.set('game', game || '')
+    if (gender) params.set('gender', gender)
+    if (region) params.set('region', region)
+    if (ageMin !== undefined) params.set('age_min', String(ageMin))
+    if (ageMax !== undefined) params.set('age_max', String(ageMax))
+    return request<{ candidates: Candidate[]; total: number }>(`/discover/feed?${params}`)
+  },
 
   likeUser: (toTelegramId: number, game?: string) =>
     request<{ is_match: boolean; match_id: number | null; matched_user: Profile | null }>(

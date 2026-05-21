@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom'
 import { api, Candidate, GameInfo } from '../api/client'
 import { impact, notification } from '../utils/haptic'
 
+const GENDERS = ['M', 'F'] as const
+const REGIONS = ['cis', 'eu', 'na', 'asia', 'sa', 'oce'] as const
+
 interface Props {
   user: { telegram_id: number; username: string | null; is_registered: boolean } | null
 }
@@ -16,6 +19,13 @@ export default function Discover({ user }: Props) {
   const [loading, setLoading] = useState(true)
   const [matchPopup, setMatchPopup] = useState<{ matchId: number; name: string } | null>(null)
   const [animClass, setAnimClass] = useState('')
+  const [showFilters, setShowFilters] = useState(false)
+  const [filterGender, setFilterGender] = useState('')
+  const [filterRegion, setFilterRegion] = useState('')
+  const [filterAgeMin, setFilterAgeMin] = useState(0)
+  const [filterAgeMax, setFilterAgeMax] = useState(99)
+
+  const hasActiveFilters = filterGender || filterRegion || filterAgeMin > 0 || filterAgeMax < 99
 
   useEffect(() => {
     api.getGames().then(data => setGames(data.games))
@@ -24,11 +34,17 @@ export default function Discover({ user }: Props) {
   useEffect(() => {
     setLoading(true)
     setCurrentIdx(0)
-    api.getFeed(selectedGame).then(data => {
+    api.getFeed(
+      selectedGame,
+      filterGender || undefined,
+      filterRegion || undefined,
+      filterAgeMin || undefined,
+      filterAgeMax < 99 ? filterAgeMax : undefined,
+    ).then(data => {
       setCandidates(data.candidates)
       setLoading(false)
     }).catch(() => setLoading(false))
-  }, [selectedGame])
+  }, [selectedGame, filterGender, filterRegion, filterAgeMin, filterAgeMax])
 
   const current = candidates[currentIdx]
   const hasMore = currentIdx < candidates.length - 1
@@ -175,18 +191,85 @@ export default function Discover({ user }: Props) {
   return (
     <main style={{ minHeight: '100vh', background: 'var(--background)', paddingBottom: 80 }}>
       {/* Header */}
-      <div className="sticky-header">
-        <h1 style={{ fontSize: 18, fontWeight: 600 }}>Discover</h1>
-        <div style={{ display: 'flex', gap: 8 }}>
-          {selectedGame && (
-            <span style={{
-              borderRadius: 8, background: 'rgba(197,84,212,0.12)', color: 'var(--primary)',
-              padding: '2px 8px', fontSize: 11, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4,
-            }}>
-              {games.find(g => g.key === selectedGame)?.display || selectedGame}
-            </span>
-          )}
+      <div className="sticky-header" style={{ flexDirection: 'column', gap: 8, alignItems: 'stretch' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <h1 style={{ fontSize: 18, fontWeight: 600 }}>Discover</h1>
+          <div style={{ display: 'flex', gap: 8 }}>
+            {hasActiveFilters && (
+              <span style={{
+                borderRadius: 8, background: 'rgba(95,200,221,0.12)', color: 'var(--cyan)',
+                padding: '2px 8px', fontSize: 11, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4,
+              }}>
+                Filters active
+              </span>
+            )}
+            <button onClick={() => { impact('light'); setShowFilters(p => !p) }}
+              style={{
+                background: showFilters ? 'var(--primary)' : 'none',
+                border: showFilters ? 'none' : '1px solid var(--border)',
+                color: showFilters ? '#fff' : 'var(--muted-foreground)',
+                cursor: 'pointer', borderRadius: 8, padding: '6px 12px',
+                fontSize: 13, fontWeight: 500,
+              }}>
+              {showFilters ? 'Close' : '⚙️ Filters'}
+            </button>
+          </div>
         </div>
+
+        {/* Filter panel */}
+        {showFilters && (
+          <div style={{
+            background: 'var(--card)', borderRadius: 12, border: '1px solid var(--border)',
+            padding: 16, display: 'flex', flexDirection: 'column', gap: 14,
+            animation: 'fadeIn 0.2s ease-out',
+          }}>
+            {/* Gender */}
+            <div>
+              <label style={{ fontSize: 13, color: 'var(--muted-foreground)', marginBottom: 6, display: 'block' }}>Gender</label>
+              <div style={{ display: 'flex', gap: 6 }}>
+                <button className={`chip ${filterGender === '' ? 'active' : ''}`}
+                  onClick={() => setFilterGender('')}>Any</button>
+                {GENDERS.map(g => (
+                  <button key={g} className={`chip ${filterGender === g ? 'active' : ''}`}
+                    onClick={() => setFilterGender(g)}>
+                    {g === 'M' ? '♂️ Male' : '♀️ Female'}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Region */}
+            <div>
+              <label style={{ fontSize: 13, color: 'var(--muted-foreground)', marginBottom: 6, display: 'block' }}>Region</label>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                <button className={`chip ${filterRegion === '' ? 'active' : ''}`}
+                  onClick={() => setFilterRegion('')}>Any</button>
+                {REGIONS.map(r => (
+                  <button key={r} className={`chip ${filterRegion === r ? 'active' : ''}`}
+                    onClick={() => setFilterRegion(r)}>{r.toUpperCase()}</button>
+                ))}
+              </div>
+            </div>
+
+            {/* Age range */}
+            <div>
+              <label style={{ fontSize: 13, color: 'var(--muted-foreground)', marginBottom: 6, display: 'block' }}>
+                Age: {filterAgeMin}–{filterAgeMax}
+              </label>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <input type="number" className="input-field" min={14} max={99} value={filterAgeMin}
+                  onChange={e => setFilterAgeMin(Math.max(14, Math.min(99, parseInt(e.target.value) || 0)))}
+                  style={{ width: 60, fontSize: 13, textAlign: 'center' }} />
+                <span style={{ color: 'var(--muted-foreground)' }}>—</span>
+                <input type="number" className="input-field" min={14} max={99} value={filterAgeMax}
+                  onChange={e => setFilterAgeMax(Math.max(14, Math.min(99, parseInt(e.target.value) || 99)))}
+                  style={{ width: 60, fontSize: 13, textAlign: 'center' }} />
+                <button className="chip" onClick={() => { setFilterAgeMin(0); setFilterAgeMax(99) }}
+                  style={{ marginLeft: 'auto' }}>Reset</button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Game filter chips */}

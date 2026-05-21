@@ -17,7 +17,7 @@ import LobbyList from './pages/LobbyList'
 import LobbyCreate from './pages/LobbyCreate'
 import LobbyView from './pages/LobbyView'
 
-const MAINTENANCE = true
+const MAINTENANCE = false
 
 const NAV_ITEMS = [
   { path: '/discover', icon: '🔍', label: 'Discover' },

@@ -17,6 +17,10 @@ router = APIRouter()
 @router.get("/feed", response_model=DiscoverResponse)
 async def get_feed(
     game: str = '',
+    gender: str = '',
+    region: str = '',
+    age_min: int = 0,
+    age_max: int = 99,
     auth: dict = Depends(get_telegram_user),
     session: AsyncSession = Depends(get_session),
 ):
@@ -25,7 +29,7 @@ async def get_feed(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No telegram_id")
 
     feed_service = FeedService(session)
-    candidates = await feed_service.get_feed(telegram_id, game)
+    candidates = await feed_service.get_feed(telegram_id, game, gender, region, age_min, age_max)
 
     items = []
     for u in candidates:

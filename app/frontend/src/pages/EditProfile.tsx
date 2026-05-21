@@ -51,15 +51,10 @@ export default function EditProfile({ user }: Props) {
       for (const gk of gameKeys) {
         const gp = p.games[gk]
         ranks[gk] = gp.rank || ''
-        const roleKeys = Object.keys(gp.roles || {})
-        if (roleKeys.length > 0) {
-          const gameDef = g.games.find((x: GameInfo) => x.key === gk)
-          if (gameDef?.rank_per_role) {
-            perRole[gk] = { ...gp.roles }
-          } else {
-            roles[gk] = roleKeys
-            ranks[gk] = gp.rank || ''
-          }
+        const roleEntries = Object.entries(gp.roles || {})
+        if (roleEntries.length > 0) {
+          roles[gk] = roleEntries.map(([r]) => r)
+          perRole[gk] = Object.fromEntries(roleEntries)
         }
       }
       setGameRanks(ranks)
@@ -91,9 +86,11 @@ export default function EditProfile({ user }: Props) {
       } else if (game.rank_per_role) {
         games[gk] = { roles: roleRanks[gk] || {} }
       } else {
+        const rrk = roleRanks[gk]
+        const hasPerRole = rrk && Object.keys(rrk).length > 0
         const roles: Record<string, string> = {}
         for (const role of gameRoles[gk] || []) {
-          roles[role] = gameRanks[gk] || ''
+          roles[role] = (hasPerRole ? rrk[role] : gameRanks[gk]) || ''
         }
         games[gk] = { rank: gameRanks[gk] || '', roles }
       }
@@ -142,6 +139,47 @@ export default function EditProfile({ user }: Props) {
 
     if (!game.rank_per_role) {
       const selected = gameRoles[gameKey] || []
+      const rr = roleRanks[gameKey]
+      const hasPerRole = rr && Object.keys(rr).length > 0
+      if (hasPerRole) {
+        const toggleRole = (role: string) => {
+          if (selected.includes(role)) {
+            setGameRoles(prev => ({ ...prev, [gameKey]: selected.filter(x => x !== role) }))
+          } else {
+            setGameRoles(prev => ({ ...prev, [gameKey]: [...selected, role] }))
+            if (!rr[role]) {
+              setRoleRanks(prev => ({
+                ...prev,
+                [gameKey]: { ...prev[gameKey], [role]: '' },
+              }))
+            }
+          }
+        }
+        return (
+          <div key={gameKey} style={{ marginTop: 8 }}>
+            <label style={{ fontSize: 13, color: 'var(--tg-hint)', marginBottom: 6, display: 'block' }}>Roles</label>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
+              {game.roles.map(r => (
+                <button key={r} className={`chip ${selected.includes(r) ? 'active' : ''}`}
+                  onClick={() => toggleRole(r)}>{r}</button>
+              ))}
+            </div>
+            {game.roles.filter(r => selected.includes(r)).map(role => (
+              <div key={role} style={{ marginBottom: 8 }}>
+                <label style={{ fontSize: 13, color: 'var(--tg-hint)', marginBottom: 4, display: 'block' }}>{role}</label>
+                <select className="input-field" value={rr[role] || ''}
+                  onChange={e => setRoleRanks(prev => ({
+                    ...prev,
+                    [gameKey]: { ...prev[gameKey], [role]: e.target.value },
+                  }))}>
+                  <option value="">Select rank</option>
+                  {game.ranks.map(r => <option key={r} value={r}>{r}</option>)}
+                </select>
+              </div>
+            ))}
+          </div>
+        )
+      }
       return (
         <div key={gameKey} style={{ marginTop: 8 }}>
           <label style={{ fontSize: 13, color: 'var(--tg-hint)', marginBottom: 6, display: 'block' }}>Roles</label>
