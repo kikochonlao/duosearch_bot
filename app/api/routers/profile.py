@@ -153,7 +153,7 @@ async def update_profile(
         if field == "games" and value is not None:
             games_dict = {}
             for gk, gp in value.items():
-                games_dict[gk] = {"rank": gp.rank, "roles": gp.roles}
+                games_dict[gk] = {"rank": gp.get("rank"), "roles": gp.get("roles", {})}
             user.set_games(games_dict)
         else:
             setattr(user, field, value)
