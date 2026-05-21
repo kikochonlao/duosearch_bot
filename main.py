@@ -60,6 +60,8 @@ async def run_bot():
         for stmt in [
             "ALTER TABLE users ADD COLUMN IF NOT EXISTS bio TEXT",
             "ALTER TABLE users ADD COLUMN IF NOT EXISTS photo_url VARCHAR",
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS steam_id VARCHAR",
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS blog TEXT",
         ]:
             try:
                 await conn.execute(text(stmt))
