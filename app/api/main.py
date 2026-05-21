@@ -92,3 +92,29 @@ async def bot_status():
         exc = _bot_task.exception()
         return {"status": "bot_task_finished", "exception": str(exc) if exc else "No exception"}
     return {"status": "bot_task_running"}
+
+
+@app.post("/api/migrate")
+async def run_migrations():
+    """Apply missing column migrations manually."""
+    import logging
+    logger = logging.getLogger("duosearch")
+    results = []
+    try:
+        from sqlalchemy import text
+        from db.base import engine
+        async with engine.begin() as conn:
+            for stmt in [
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS steam_id VARCHAR",
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS blog TEXT",
+            ]:
+                try:
+                    await conn.execute(text(stmt))
+                    logger.info("Migration: %s", stmt)
+                    results.append({"stmt": stmt, "status": "ok"})
+                except Exception as mig_e:
+                    logger.warning("Migration skipped: %s", mig_e)
+                    results.append({"stmt": stmt, "status": "skipped", "error": str(mig_e)})
+        return {"ok": True, "results": results}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}

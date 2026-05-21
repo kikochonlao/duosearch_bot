@@ -77,51 +77,59 @@ async def create_or_update_profile(
     auth: dict = Depends(get_telegram_user),
     session: AsyncSession = Depends(get_session),
 ):
-    telegram_id = await resolve_telegram_id(auth)
-    username = None
-    user_raw = auth.get("user")
-    if isinstance(user_raw, str):
-        import json
-        try:
-            user_raw = json.loads(user_raw)
-        except (json.JSONDecodeError, TypeError):
-            pass
-    if isinstance(user_raw, dict):
-        username = user_raw.get("username") or user_raw.get("first_name")
+    import logging
+    logger = logging.getLogger("duosearch")
+    try:
+        telegram_id = await resolve_telegram_id(auth)
+        username = None
+        user_raw = auth.get("user")
+        if isinstance(user_raw, str):
+            import json
+            try:
+                user_raw = json.loads(user_raw)
+            except (json.JSONDecodeError, TypeError):
+                pass
+        if isinstance(user_raw, dict):
+            username = user_raw.get("username") or user_raw.get("first_name")
 
-    if not telegram_id:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No telegram_id")
+        if not telegram_id:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No telegram_id")
 
-    # Validate required fields
-    if not profile.name or not profile.age or not profile.gender:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="name, age, gender are required")
+        # Validate required fields
+        if not profile.name or not profile.age or not profile.gender:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="name, age, gender are required")
 
-    games_dict = {}
-    if profile.games:
-        for gk, gp in profile.games.items():
-            games_dict[gk] = {"rank": gp.rank, "roles": gp.roles}
+        games_dict = {}
+        if profile.games:
+            for gk, gp in profile.games.items():
+                games_dict[gk] = {"rank": gp.rank, "roles": gp.roles}
 
-    domain_user = await upsert_user(
-        session=session,
-        telegram_id=telegram_id,
-        name=profile.name,
-        age=profile.age,
-        gender=profile.gender,
-        language=profile.language or "ru",
-        region=profile.region or "cis",
-        username=username,
-        bio=profile.bio,
-        photo_url=profile.photo_url,
-        looking_for=profile.looking_for or "any",
-        games=games_dict,
-    )
+        domain_user = await upsert_user(
+            session=session,
+            telegram_id=telegram_id,
+            name=profile.name,
+            age=profile.age,
+            gender=profile.gender,
+            language=profile.language or "ru",
+            region=profile.region or "cis",
+            username=username,
+            bio=profile.bio,
+            photo_url=profile.photo_url,
+            looking_for=profile.looking_for or "any",
+            games=games_dict,
+        )
 
-    await session.commit()
+        await session.commit()
 
-    result = await session.execute(select(User).where(User.telegram_id == telegram_id))
-    user = result.scalar_one()
+        result = await session.execute(select(User).where(User.telegram_id == telegram_id))
+        user = result.scalar_one()
 
-    return _profile_to_out(user)
+        return _profile_to_out(user)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("Profile creation failed", exc_info=True)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
 @router.patch("/", response_model=ProfileOut)
