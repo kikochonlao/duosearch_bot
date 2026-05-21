@@ -15,11 +15,32 @@ _bot_task: asyncio.Task | None = None
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global _bot_task
+
+    # Create all tables + run DB migrations (add missing columns)
+    import logging
+    logger = logging.getLogger("duosearch")
+    try:
+        from sqlalchemy import text
+        from db.base import engine, Base
+        from db.models import *  # noqa: F401
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+            for stmt in [
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS bio TEXT",
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS photo_url VARCHAR",
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS steam_id VARCHAR",
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS blog TEXT",
+            ]:
+                try:
+                    await conn.execute(text(stmt))
+                    logger.info("Migration: %s", stmt)
+                except Exception as mig_e:
+                    logger.warning("Migration skipped: %s", mig_e)
+    except Exception as e:
+        logger.warning("DB migrations not possible in API mode: %s", e)
+
     if asyncio.get_event_loop().is_running():
         try:
-            import logging
-            logger = logging.getLogger("duosearch")
-
             from bot_instance import init_bot, get_bot
             await init_bot()
             logger.info("Shared bot instance initialized")
@@ -27,7 +48,6 @@ async def lifespan(app: FastAPI):
             from main import run_bot
             _bot_task = asyncio.create_task(run_bot())
         except Exception as e:
-            import logging
             logging.getLogger("duosearch").warning(f"Bot not started in API mode: {e}")
     yield
     if _bot_task:
