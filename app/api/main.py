@@ -22,7 +22,6 @@ async def lifespan(app: FastAPI):
     try:
         from sqlalchemy import text
         from db.base import engine, Base
-        from db.models import *  # noqa: F401
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
             for stmt in [
