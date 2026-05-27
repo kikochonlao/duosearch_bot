@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { MessageCircle } from 'lucide-react'
 import { api, ChatSessionInfo } from '../api/client'
 
 interface Props {
@@ -35,7 +36,9 @@ export default function ChatList({ user }: Props) {
             background: 'linear-gradient(135deg, var(--primary), var(--accent))',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: 36, marginBottom: 20, opacity: 0.8,
-          }}>💬</div>
+          }}>
+            <MessageCircle size={36} />
+          </div>
           <h3 style={{ fontSize: 20, marginBottom: 8, color: 'var(--foreground)' }}>
             No chats yet
           </h3>

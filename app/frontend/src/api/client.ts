@@ -28,6 +28,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 export interface GameInfo {
   key: string
   display: string
+  icon: string
   has_roles: boolean
   rank_per_role: boolean
   ranks: string[]

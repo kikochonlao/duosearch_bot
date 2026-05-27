@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Settings, Pencil, MapPin, Languages, Gamepad2 } from 'lucide-react'
 import { api, Profile, GameInfo, SteamGame } from '../api/client'
 import { impact } from '../utils/haptic'
 
@@ -84,8 +85,8 @@ export default function ProfilePage({ user }: Props) {
         <h1 style={{ fontSize: 18, fontWeight: 600 }}>Profile</h1>
         <div style={{ display: 'flex', gap: 8 }}>
           <button onClick={() => navigate('/profile/edit')}
-            style={{ background: 'none', border: 'none', color: 'var(--muted-foreground)', cursor: 'pointer', fontSize: 18 }}>
-            ⚙️
+            style={{ background: 'none', border: 'none', color: 'var(--muted-foreground)', cursor: 'pointer', display: 'flex' }}>
+            <Settings size={20} />
           </button>
         </div>
       </div>
@@ -107,9 +108,8 @@ export default function ProfilePage({ user }: Props) {
             border: '2px solid var(--card)',
             background: 'var(--secondary)', color: 'var(--foreground)',
             cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 14,
           }}>
-            ✏️
+            <Pencil size={14} />
           </button>
         </div>
 
@@ -126,14 +126,14 @@ export default function ProfilePage({ user }: Props) {
             borderRadius: 8, background: 'rgba(197,84,212,0.12)',
             color: 'var(--primary)', padding: '2px 8px', fontSize: 11, fontWeight: 500,
           }}>
-            {profile.gender === 'M' ? '♂️ Male' : '♀️ Female'}
+            {profile.gender === 'M' ? '♂ Male' : '♀ Female'}
           </span>
         </div>
 
         <button onClick={() => navigate('/profile/edit')}
           className="btn-secondary"
           style={{ marginTop: 16, padding: '10px 24px', width: 'auto', fontSize: 14 }}>
-          ✏️ Edit Profile
+          <Pencil size={14} /> Edit Profile
         </button>
       </div>
 
@@ -146,7 +146,7 @@ export default function ProfilePage({ user }: Props) {
         {[
           { value: matchCount, label: 'Games' },
           { value: steamGames.length.toString() || '—', label: 'Steam games' },
-          { value: profile.steam_id ? '🟢' : '⚪', label: 'Steam' },
+          { value: profile.steam_id ? '✓' : '—', label: 'Steam' },
         ].map(s => (
           <div key={s.label} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
             <span style={{ fontSize: 24, fontWeight: 700 }}>{s.value}</span>
@@ -159,7 +159,7 @@ export default function ProfilePage({ user }: Props) {
       {profile.blog && (
         <section style={{ padding: '24px 16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-            <h3 className="section-title" style={{ marginBottom: 0 }}>📝 My blog</h3>
+            <h3 className="section-title" style={{ marginBottom: 0 }}>My blog</h3>
             <button onClick={() => navigate('/profile/edit')}
               style={{ background: 'none', border: 'none', color: 'var(--muted-foreground)', cursor: 'pointer', fontSize: 13 }}>
               Edit
@@ -188,11 +188,11 @@ export default function ProfilePage({ user }: Props) {
         </p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 16 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--muted-foreground)', fontSize: 14 }}>
-            <span>📍</span>
+            <MapPin size={16} />
             <span>Region: {profile.region.toUpperCase()}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--muted-foreground)', fontSize: 14 }}>
-            <span>🗣️</span>
+            <Languages size={16} />
             <span>Language: {profile.language}</span>
           </div>
         </div>
@@ -242,7 +242,7 @@ export default function ProfilePage({ user }: Props) {
                     <img src={sg.logo_url} alt="" style={{ width: 40, height: 40, borderRadius: 6, objectFit: 'cover' }}
                       onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none' }} />
                   ) : (
-                    <div style={{ width: 40, height: 40, borderRadius: 6, background: 'var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>🎮</div>
+                    <div style={{ width: 40, height: 40, borderRadius: 6, background: 'var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Gamepad2 size={20} /></div>
                   )}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontWeight: 500, fontSize: 14 }}>{sg.name}</div>

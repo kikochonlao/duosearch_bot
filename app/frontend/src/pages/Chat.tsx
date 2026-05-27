@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { Ban, AlertTriangle, ArrowUp } from 'lucide-react'
 import { api, MessageItem, MatchItem } from '../api/client'
 import { impact } from '../utils/haptic'
 
@@ -125,8 +126,8 @@ export default function Chat({ user }: Props) {
               border: '1px solid var(--tg-border)', overflow: 'hidden',
               minWidth: 160, boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
             }}>
-              <button onClick={handleBlock} style={menuItemStyle}>🚫 Block user</button>
-              <button onClick={handleReport} style={menuItemStyle}>⚠️ Report user</button>
+              <button onClick={handleBlock} style={menuItemStyle}><Ban size={16} /> Block user</button>
+              <button onClick={handleReport} style={menuItemStyle}><AlertTriangle size={16} /> Report user</button>
             </div>
           )}
         </div>
@@ -135,7 +136,7 @@ export default function Chat({ user }: Props) {
       <div style={{ flex: 1, overflowY: 'auto', padding: '8px 0', display: 'flex', flexDirection: 'column', gap: 4 }}>
         {messages.length === 0 && (
           <div style={{ textAlign: 'center', color: 'var(--tg-hint)', paddingTop: 40, fontSize: 14 }}>
-            Say hello! 👋
+            Say hello!
           </div>
         )}
         {messages.map(msg => {
@@ -175,11 +176,11 @@ export default function Chat({ user }: Props) {
         <button onClick={handleSend} disabled={!text.trim() || sending} style={{
           width: 44, height: 44, borderRadius: '50%', border: 'none', flexShrink: 0,
           background: text.trim() ? 'var(--tg-button)' : 'var(--tg-border)',
-          color: 'var(--tg-button-text)', fontSize: 20, cursor: text.trim() ? 'pointer' : 'default',
+          color: 'var(--tg-button-text)', cursor: text.trim() ? 'pointer' : 'default',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           transition: 'all 0.2s',
         }}>
-          ↑
+          <ArrowUp size={20} />
         </button>
       </div>
     </div>

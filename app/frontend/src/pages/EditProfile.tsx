@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { FileText, Save } from 'lucide-react'
 import { api, Profile, GameInfo } from '../api/client'
 import { impact } from '../utils/haptic'
 
@@ -119,20 +120,32 @@ export default function EditProfile({ user }: Props) {
     )
   }
 
+  const renderRankChips = (gameKey: string, ranks: string[], value: string, onChange: (v: string) => void) => (
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+      {ranks.map(r => (
+        <button key={r}
+          onClick={() => { impact('light'); onChange(r) }}
+          style={{
+            padding: '5px 10px', borderRadius: 6, cursor: 'pointer', fontFamily: 'inherit', fontSize: 12,
+            border: `1px solid ${value === r ? 'var(--primary)' : 'var(--border)'}`,
+            background: value === r ? 'rgba(197,84,212,0.12)' : 'transparent',
+            color: value === r ? 'var(--primary)' : 'var(--muted-foreground)',
+            fontWeight: value === r ? 600 : 400,
+            transition: 'all 0.1s',
+          }}>{r}</button>
+      ))}
+    </div>
+  )
+
   const renderGameRankPicker = (gameKey: string) => {
     const game = gamesData.find(g => g.key === gameKey)
     if (!game) return null
 
     if (!game.has_roles) {
       return (
-        <div key={gameKey} style={{ marginTop: 8 }}>
-          <label style={{ fontSize: 13, color: 'var(--tg-hint)', marginBottom: 6, display: 'block' }}>Rank</label>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-            {game.ranks.map(r => (
-              <button key={r} className={`chip ${gameRanks[gameKey] === r ? 'active' : ''}`}
-                onClick={() => { impact('light'); setGameRanks(prev => ({ ...prev, [gameKey]: r })) }}>{r}</button>
-            ))}
-          </div>
+        <div>
+          <label style={{ fontSize: 12, color: 'var(--tg-hint)', marginBottom: 6, display: 'block' }}>Rank</label>
+          {renderRankChips(gameKey, game.ranks, gameRanks[gameKey] || '', v => setGameRanks(prev => ({ ...prev, [gameKey]: v })))}
         </div>
       )
     }
@@ -141,6 +154,7 @@ export default function EditProfile({ user }: Props) {
       const selected = gameRoles[gameKey] || []
       const rr = roleRanks[gameKey]
       const hasPerRole = rr && Object.keys(rr).length > 0
+
       if (hasPerRole) {
         const toggleRole = (role: string) => {
           if (selected.includes(role)) {
@@ -156,9 +170,9 @@ export default function EditProfile({ user }: Props) {
           }
         }
         return (
-          <div key={gameKey} style={{ marginTop: 8 }}>
-            <label style={{ fontSize: 13, color: 'var(--tg-hint)', marginBottom: 6, display: 'block' }}>Roles</label>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
+          <div>
+            <label style={{ fontSize: 12, color: 'var(--tg-hint)', marginBottom: 6, display: 'block' }}>Roles</label>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
               {game.roles.map(r => (
                 <button key={r} className={`chip ${selected.includes(r) ? 'active' : ''}`}
                   onClick={() => toggleRole(r)}>{r}</button>
@@ -166,12 +180,13 @@ export default function EditProfile({ user }: Props) {
             </div>
             {game.roles.filter(r => selected.includes(r)).map(role => (
               <div key={role} style={{ marginBottom: 8 }}>
-                <label style={{ fontSize: 13, color: 'var(--tg-hint)', marginBottom: 4, display: 'block' }}>{role}</label>
+                <label style={{ fontSize: 12, color: 'var(--tg-hint)', marginBottom: 4, display: 'block' }}>{role}</label>
                 <select className="input-field" value={rr[role] || ''}
                   onChange={e => setRoleRanks(prev => ({
                     ...prev,
                     [gameKey]: { ...prev[gameKey], [role]: e.target.value },
-                  }))}>
+                  }))}
+                  style={{ padding: '8px 10px', fontSize: 13 }}>
                   <option value="">Select rank</option>
                   {game.ranks.map(r => <option key={r} value={r}>{r}</option>)}
                 </select>
@@ -180,10 +195,11 @@ export default function EditProfile({ user }: Props) {
           </div>
         )
       }
+
       return (
-        <div key={gameKey} style={{ marginTop: 8 }}>
-          <label style={{ fontSize: 13, color: 'var(--tg-hint)', marginBottom: 6, display: 'block' }}>Roles</label>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
+        <div>
+          <label style={{ fontSize: 12, color: 'var(--tg-hint)', marginBottom: 6, display: 'block' }}>Roles</label>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
             {game.roles.map(r => (
               <button key={r} className={`chip ${selected.includes(r) ? 'active' : ''}`}
                 onClick={() => setGameRoles(prev => ({
@@ -192,28 +208,24 @@ export default function EditProfile({ user }: Props) {
                 }))}>{r}</button>
             ))}
           </div>
-          <label style={{ fontSize: 13, color: 'var(--tg-hint)', marginBottom: 6, display: 'block' }}>Rank</label>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-            {game.ranks.map(r => (
-              <button key={r} className={`chip ${gameRanks[gameKey] === r ? 'active' : ''}`}
-                onClick={() => { impact('light'); setGameRanks(prev => ({ ...prev, [gameKey]: r })) }}>{r}</button>
-            ))}
-          </div>
+          <label style={{ fontSize: 12, color: 'var(--tg-hint)', marginBottom: 6, display: 'block' }}>Rank</label>
+          {renderRankChips(gameKey, game.ranks, gameRanks[gameKey] || '', v => setGameRanks(prev => ({ ...prev, [gameKey]: v })))}
         </div>
       )
     }
 
     const rr = roleRanks[gameKey] || {}
     return (
-      <div key={gameKey} style={{ marginTop: 8 }}>
+      <div>
         {game.roles.map(role => (
           <div key={role} style={{ marginBottom: 8 }}>
-            <label style={{ fontSize: 13, color: 'var(--tg-hint)', marginBottom: 4, display: 'block' }}>{role}</label>
+            <label style={{ fontSize: 12, color: 'var(--tg-hint)', marginBottom: 4, display: 'block' }}>{role}</label>
             <select className="input-field" value={rr[role] || ''}
               onChange={e => setRoleRanks(prev => ({
                 ...prev,
                 [gameKey]: { ...prev[gameKey], [role]: e.target.value },
-              }))}>
+              }))}
+              style={{ padding: '8px 10px', fontSize: 13 }}>
               <option value="">Select rank</option>
               {game.ranks.map(r => <option key={r} value={r}>{r}</option>)}
             </select>
@@ -296,7 +308,7 @@ export default function EditProfile({ user }: Props) {
                     background: active ? (male ? 'rgba(95,200,221,0.15)' : 'rgba(232,87,158,0.15)') : undefined,
                     color: active ? (male ? 'var(--cyan)' : 'var(--pink)') : undefined,
                   }}>
-                  {male ? '♂️ Male' : '♀️ Female'}
+                  {male ? '♂ Male' : '♀ Female'}
                 </button>
               )
             })}
@@ -330,7 +342,7 @@ export default function EditProfile({ user }: Props) {
 
       {/* Blog */}
       <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 20 }}>
-        <label style={{ fontSize: 16, fontWeight: 600, marginBottom: 4 }}>📝 Game blog</label>
+        <label style={{ fontSize: 16, fontWeight: 600, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 }}><FileText size={16} /> Game blog</label>
         <p style={{ fontSize: 12, color: 'var(--muted-foreground)', marginBottom: 4 }}>
           Write about your gaming experience, achievements, or what you're looking for
         </p>
@@ -340,21 +352,56 @@ export default function EditProfile({ user }: Props) {
       </div>
 
       {/* Games section */}
-      <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 20 }}>
-        <label style={{ fontSize: 16, fontWeight: 600, marginBottom: 4 }}>Games</label>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-          {gamesData.map(g => (
-            <button key={g.key} className={`chip ${selectedGames.includes(g.key) ? 'active' : ''}`}
-              onClick={() => toggleGame(g.key)}>
-              {g.display}
-            </button>
-          ))}
+      <div style={{ marginTop: 20 }}>
+        <label style={{ fontSize: 16, fontWeight: 600, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+          Games
+        </label>
+        <div className="card" style={{ display: 'flex', flexWrap: 'wrap', gap: 8, padding: 16 }}>
+          {gamesData.map(g => {
+            const active = selectedGames.includes(g.key)
+            return (
+              <button key={g.key}
+                onClick={() => toggleGame(g.key)}
+                style={{
+                  flex: '1 0 calc(50% - 4px)', minWidth: 0, maxWidth: '100%',
+                  padding: '10px 12px', borderRadius: 10, cursor: 'pointer',
+                  border: `1.5px solid ${active ? 'var(--primary)' : 'var(--border)'}`,
+                  background: active ? 'rgba(197,84,212,0.1)' : 'var(--card)',
+                  color: active ? 'var(--primary)' : 'var(--foreground)',
+                  fontWeight: active ? 600 : 400,
+                  fontSize: 13, textAlign: 'center', fontFamily: 'inherit',
+                  transition: 'all 0.15s',
+                }}>
+                {g.display}
+              </button>
+            )
+          })}
         </div>
-        {selectedGames.map(gk => renderGameRankPicker(gk))}
+        {selectedGames.map(gk => {
+          const game = gamesData.find(g => g.key === gk)
+          if (!game) return null
+          return (
+            <div key={gk} style={{
+              marginTop: 12, borderRadius: 12, border: '1px solid var(--border)',
+              background: 'var(--card)', overflow: 'hidden',
+            }}>
+              <div style={{
+                padding: '10px 14px', fontWeight: 600, fontSize: 14,
+                borderBottom: '1px solid var(--border)',
+                background: 'var(--secondary)',
+              }}>
+                {game.display}
+              </div>
+              <div style={{ padding: '12px 14px' }}>
+                {renderGameRankPicker(gk)}
+              </div>
+            </div>
+          )
+        })}
       </div>
 
       <button className="btn-primary" onClick={handleSave} disabled={saving} style={{ marginTop: 24 }}>
-        {saving ? 'Saving...' : '💾 Save Changes'}
+        {saving ? 'Saving...' : <><Save size={16} /> Save Changes</>}
       </button>
     </div>
   )

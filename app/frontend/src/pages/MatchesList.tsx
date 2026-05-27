@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Search, Heart, MessageCircle } from 'lucide-react'
 import { api, MatchItem } from '../api/client'
 
 interface Props {
@@ -38,8 +39,8 @@ export default function MatchesList({ user }: Props) {
       <div className="sticky-header" style={{ flexDirection: 'column', gap: 12, alignItems: 'stretch' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <h1 style={{ fontSize: 18, fontWeight: 600 }}>Matches</h1>
-          <button style={{ background: 'none', border: 'none', color: 'var(--muted-foreground)', cursor: 'pointer', fontSize: 16 }}>
-            🔍
+          <button style={{ background: 'none', border: 'none', color: 'var(--muted-foreground)', cursor: 'pointer', display: 'flex' }}>
+            <Search size={18} />
           </button>
         </div>
         <input
@@ -63,7 +64,7 @@ export default function MatchesList({ user }: Props) {
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: 36, marginBottom: 20, opacity: 0.8,
           }}>
-            {search ? '🔍' : '💔'}
+            {search ? <Search size={36} /> : <Heart size={36} />}
           </div>
           <h3 style={{ fontSize: 20, marginBottom: 8, color: 'var(--foreground)' }}>
             {search ? 'Nothing found' : 'No matches yet'}
@@ -114,7 +115,7 @@ export default function MatchesList({ user }: Props) {
               color: 'var(--green)', padding: '2px 8px', fontSize: 11, fontWeight: 500,
               whiteSpace: 'nowrap',
             }}>
-              💬 Active
+              <MessageCircle size={12} /> Active
             </span>
           )}
         </div>

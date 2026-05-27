@@ -1,6 +1,7 @@
 RANKS = {
     "cs2": {
         "display": "CS2",
+        "icon": "🔫",
         "has_roles": False,
         "ranks": [
             "Silver I", "Silver II", "Silver III", "Silver IV", "Silver Elite", "Silver Elite Master",
@@ -14,6 +15,7 @@ RANKS = {
     },
     "dota2": {
         "display": "Dota 2",
+        "icon": "🗡️",
         "has_roles": True,
         "rank_per_role": False,
         "ranks": [
@@ -29,6 +31,7 @@ RANKS = {
     },
     "valorant": {
         "display": "Valorant",
+        "icon": "🔫",
         "has_roles": False,
         "ranks": [
             "Iron 1", "Iron 2", "Iron 3",
@@ -44,6 +47,7 @@ RANKS = {
     },
     "overwatch": {
         "display": "Overwatch",
+        "icon": "🎯",
         "has_roles": True,
         "rank_per_role": True,
         "ranks": [
@@ -59,6 +63,7 @@ RANKS = {
     },
     "apex": {
         "display": "Apex Legends",
+        "icon": "🏆",
         "has_roles": False,
         "ranks": [
             "Rookie", "Bronze", "Silver", "Gold", "Platinum", "Diamond", "Master", "Apex Predator",
@@ -66,6 +71,7 @@ RANKS = {
     },
     "lol": {
         "display": "League of Legends",
+        "icon": "⚔️",
         "has_roles": True,
         "rank_per_role": False,
         "ranks": [
@@ -81,6 +87,7 @@ RANKS = {
     },
     "fortnite": {
         "display": "Fortnite",
+        "icon": "⛏️",
         "has_roles": False,
         "ranks": [
             "Bronze 1", "Bronze 2", "Bronze 3",
@@ -95,6 +102,7 @@ RANKS = {
     },
     "rocket_league": {
         "display": "Rocket League",
+        "icon": "🚗",
         "has_roles": False,
         "ranks": [
             "Bronze", "Silver", "Gold", "Platinum", "Diamond", "Champion", "Grand Champion", "Supersonic Legend",
@@ -102,6 +110,7 @@ RANKS = {
     },
     "pubg": {
         "display": "PUBG",
+        "icon": "🪖",
         "has_roles": False,
         "ranks": [
             "Bronze", "Silver", "Gold", "Platinum", "Diamond", "Master", "Grandmaster",

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Search, Settings, X, Heart, Star } from 'lucide-react'
 import { api, Candidate, GameInfo } from '../api/client'
 import { impact, notification } from '../utils/haptic'
 
@@ -166,7 +167,9 @@ export default function Discover({ user }: Props) {
             background: 'linear-gradient(135deg, var(--cyan), var(--primary))',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: 36, marginBottom: 20, opacity: 0.8,
-          }}>🔍</div>
+          }}>
+            <Search size={36} />
+          </div>
           <h3 style={{ fontSize: 20, marginBottom: 8 }}>No candidates found</h3>
           <p style={{ color: 'var(--muted-foreground)', fontSize: 14, marginBottom: 24, maxWidth: 300, lineHeight: 1.5 }}>
             All clear! Try a different game or check back later
@@ -211,7 +214,7 @@ export default function Discover({ user }: Props) {
                 cursor: 'pointer', borderRadius: 8, padding: '6px 12px',
                 fontSize: 13, fontWeight: 500,
               }}>
-              {showFilters ? 'Close' : '⚙️ Filters'}
+              {showFilters ? 'Close' : <><Settings size={14} /> Filters</>}
             </button>
           </div>
         </div>
@@ -232,7 +235,7 @@ export default function Discover({ user }: Props) {
                 {GENDERS.map(g => (
                   <button key={g} className={`chip ${filterGender === g ? 'active' : ''}`}
                     onClick={() => setFilterGender(g)}>
-                    {g === 'M' ? '♂️ Male' : '♀️ Female'}
+                    {g === 'M' ? '♂ Male' : '♀ Female'}
                   </button>
                 ))}
               </div>
@@ -367,35 +370,35 @@ export default function Discover({ user }: Props) {
             width: 56, height: 56, borderRadius: '50%',
             border: '2px solid var(--destructive)',
             background: 'rgba(232,73,74,0.1)',
-            color: 'var(--destructive)', fontSize: 28, cursor: 'pointer',
+            color: 'var(--destructive)', cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             transition: 'transform 0.15s',
           }} onMouseDown={e => (e.currentTarget.style.transform = 'scale(0.9)')}
              onMouseUp={e => (e.currentTarget.style.transform = '')}>
-            ✕
+            <X size={28} />
           </button>
           <button style={{
             width: 48, height: 48, borderRadius: '50%',
             border: '2px solid var(--cyan)',
             background: 'rgba(95,200,221,0.1)',
-            color: 'var(--cyan)', fontSize: 24, cursor: 'pointer',
+            color: 'var(--cyan)', cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             transition: 'transform 0.15s',
           }} onMouseDown={e => (e.currentTarget.style.transform = 'scale(0.9)')}
              onMouseUp={e => (e.currentTarget.style.transform = '')}>
-            ★
+            <Star size={24} />
           </button>
           <button onClick={handleLike} style={{
             width: 56, height: 56, borderRadius: '50%',
             border: 'none',
             background: 'linear-gradient(135deg, var(--primary), var(--pink))',
-            color: '#fff', fontSize: 28, cursor: 'pointer',
+            color: '#fff', cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             boxShadow: '0 4px 15px rgba(197,84,212,0.3)',
             transition: 'transform 0.15s',
           }} onMouseDown={e => (e.currentTarget.style.transform = 'scale(0.9)')}
              onMouseUp={e => (e.currentTarget.style.transform = '')}>
-            ♥
+            <Heart size={28} />
           </button>
         </div>
 

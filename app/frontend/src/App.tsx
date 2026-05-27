@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom'
+import { Compass, Gamepad2, Heart, MessageCircle, User } from 'lucide-react'
 import { api } from './api/client'
 import { impact } from './utils/haptic'
 import Welcome from './pages/Welcome'
@@ -20,14 +21,14 @@ import LobbyView from './pages/LobbyView'
 const MAINTENANCE = false
 
 const NAV_ITEMS = [
-  { path: '/discover', icon: '🔍', label: 'Discover' },
-  { path: '/lobbies', icon: '🎮', label: 'Lobbies' },
-  { path: '/matches', icon: '❤️', label: 'Matches' },
-  { path: '/chats', icon: '💬', label: 'Chats' },
-  { path: '/profile', icon: '👤', label: 'Profile' },
+  { path: '/discover', icon: Compass, label: 'Discover' },
+  { path: '/lobbies', icon: Gamepad2, label: 'Lobbies' },
+  { path: '/matches', icon: Heart, label: 'Matches' },
+  { path: '/chats', icon: MessageCircle, label: 'Chats' },
+  { path: '/profile', icon: User, label: 'Profile' },
 ]
 
-function NavBtn({ label, icon, active, onClick }: { label: string; icon: string; active: boolean; onClick: () => void }) {
+function NavBtn({ label, icon: Icon, active, onClick }: { label: string; icon: typeof Compass; active: boolean; onClick: () => void }) {
   return (
     <button onClick={() => { impact('light'); onClick() }} style={{
       flex: 1, background: 'none', border: 'none', cursor: 'pointer',
@@ -35,9 +36,11 @@ function NavBtn({ label, icon, active, onClick }: { label: string; icon: string;
       transition: 'all 0.2s', fontFamily: 'inherit',
     }}>
       <div style={{
-        fontSize: 22, marginBottom: 2,
+        marginBottom: 2,
         color: active ? 'var(--primary)' : 'var(--muted-foreground)',
-      }}>{icon}</div>
+      }}>
+        <Icon size={22} />
+      </div>
       <div style={{
         fontSize: 10, fontWeight: active ? 600 : 400,
         color: active ? 'var(--primary)' : 'var(--muted-foreground)',

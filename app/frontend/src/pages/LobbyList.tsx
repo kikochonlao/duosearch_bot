@@ -1,7 +1,28 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Lock } from 'lucide-react'
 import { api, LobbyItem, GameInfo } from '../api/client'
 import { impact } from '../utils/haptic'
+
+const GAME_GRADIENTS: Record<string, string> = {
+  cs2: 'linear-gradient(135deg, #f59e0b, #d97706)',
+  dota2: 'linear-gradient(135deg, #22c55e, #166534)',
+  valorant: 'linear-gradient(135deg, #ef4444, #991b1b)',
+  overwatch: 'linear-gradient(135deg, #f97316, #ea580c)',
+  apex: 'linear-gradient(135deg, #ef4444, #7f1d1d)',
+  lol: 'linear-gradient(135deg, #3b82f6, #1e3a8a)',
+  fortnite: 'linear-gradient(135deg, #a855f7, #6b21a8)',
+  rocket_league: 'linear-gradient(135deg, #06b6d4, #0891b2)',
+  pubg: 'linear-gradient(135deg, #eab308, #854d0e)',
+}
+
+function getGameIcon(games: GameInfo[], key: string): string {
+  return games.find(g => g.key === key)?.icon || '🎮'
+}
+
+function getGameGradient(key: string): string {
+  return GAME_GRADIENTS[key] || 'linear-gradient(135deg, var(--primary), var(--pink))'
+}
 
 interface Props {
   user: { telegram_id: number; username: string | null; is_registered: boolean } | null
@@ -64,7 +85,7 @@ export default function LobbyList({ user }: Props) {
           ))}
         </div>
         <input className="input-field" value={search} onChange={e => handleSearch(e.target.value)}
-          placeholder="🔍 Search lobbies..." style={{ borderRadius: 10, fontSize: 14 }} />
+          placeholder="Search lobbies..." style={{ borderRadius: 10, fontSize: 14 }} />
       </div>
 
       {loading ? (
@@ -84,7 +105,9 @@ export default function LobbyList({ user }: Props) {
             background: 'linear-gradient(135deg, var(--primary), var(--accent))',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: 36, marginBottom: 20, opacity: 0.8,
-          }}>🎮</div>
+          }}>
+            🎮
+          </div>
           <h3 style={{ fontSize: 20, marginBottom: 8, color: 'var(--foreground)' }}>
             No open lobbies
           </h3>
@@ -110,14 +133,11 @@ export default function LobbyList({ user }: Props) {
             onMouseOut={e => e.currentTarget.style.background = 'transparent'}>
             <div style={{
               width: 44, height: 44, borderRadius: 12,
-              background: 'linear-gradient(135deg, var(--primary), var(--pink))',
+              background: getGameGradient(lb.game),
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 20, flexShrink: 0,
+              fontSize: 22, flexShrink: 0, boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
             }}>
-              {(() => {
-                const icons: Record<string, string> = { cs2: '🔫', dota2: '🗡️', valorant: '🔫', pubg: '🪖', overwatch: '🎯' }
-                return icons[lb.game] || '🎮'
-              })()}
+              {getGameIcon(games, lb.game)}
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontWeight: 600, fontSize: 15, marginBottom: 2 }}>{lb.title}</div>
@@ -125,7 +145,7 @@ export default function LobbyList({ user }: Props) {
                 <span>{lb.creator_name}</span>
                 <span>·</span>
                 <span>{lb.member_count}/{lb.max_players}</span>
-                {!lb.is_public && <span>· 🔒</span>}
+                {!lb.is_public && <span>· <Lock size={12} /></span>}
               </div>
             </div>
             {lb.member_count < lb.max_players && lb.status === 'open' ? (

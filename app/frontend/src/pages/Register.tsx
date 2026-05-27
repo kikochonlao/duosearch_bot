@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { api, GameInfo } from '../api/client'
 import { impact } from '../utils/haptic'
 
@@ -201,7 +202,7 @@ export default function Register({ user, onRegistered }: Props) {
                       background: active ? (male ? 'rgba(95,200,221,0.15)' : 'rgba(232,87,158,0.15)') : undefined,
                       color: active ? (male ? 'var(--cyan)' : 'var(--pink)') : undefined,
                     }}>
-                    {male ? '♂️ Male' : '♀️ Female'}
+                    {male ? '♂ Male' : '♀ Female'}
                   </button>
                 )
               })}
@@ -384,12 +385,12 @@ export default function Register({ user, onRegistered }: Props) {
           {step > 0 && (
             <button className="btn-secondary" onClick={() => { impact('light'); setStep(s => s - 1) }}
               style={{ flex: 0.3, padding: 14 }}>
-              ← Back
+              <ArrowLeft size={16} /> Back
             </button>
           )}
           <button className="btn-primary" onClick={() => { impact('medium'); handleNext() }} disabled={saving}
             style={{ flex: 1, padding: 14 }}>
-            {saving ? 'Saving...' : isLast ? 'Complete Profile' : 'Continue →'}
+            {saving ? 'Saving...' : isLast ? 'Complete Profile' : <>Continue <ArrowRight size={16} /></>}
           </button>
         </div>
       </div>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
+import { FileText } from 'lucide-react'
 import { api, Profile, GameInfo } from '../api/client'
 
 interface Props {
@@ -78,7 +79,7 @@ export default function UserProfile({ user }: Props) {
             borderRadius: 8, background: 'rgba(197,84,212,0.12)',
             color: 'var(--primary)', padding: '2px 8px', fontSize: 11, fontWeight: 500,
           }}>
-            {profile.gender === 'M' ? '♂️ Male' : '♀️ Female'}
+            {profile.gender === 'M' ? '♂ Male' : '♀ Female'}
           </span>
         </div>
       </div>
@@ -94,7 +95,7 @@ export default function UserProfile({ user }: Props) {
 
       {profile.blog && (
         <section style={{ padding: '0 16px 24px' }}>
-          <h3 className="section-title" style={{ marginBottom: 8 }}>📝 Blog</h3>
+          <h3 className="section-title" style={{ marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}><FileText size={16} /> Blog</h3>
           <div style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--foreground)', whiteSpace: 'pre-wrap' }}>
             {profile.blog}
           </div>

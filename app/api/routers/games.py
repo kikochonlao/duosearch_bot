@@ -13,6 +13,7 @@ async def get_all_games():
         result.append({
             "key": key,
             "display": data["display"],
+            "icon": data.get("icon", "🎮"),
             "has_roles": data.get("has_roles", False),
             "rank_per_role": data.get("rank_per_role", False),
             "ranks": data.get("ranks", []),

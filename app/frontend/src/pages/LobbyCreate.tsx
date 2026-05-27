@@ -1,7 +1,20 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { ArrowLeft } from 'lucide-react'
 import { api, GameInfo } from '../api/client'
 import { impact } from '../utils/haptic'
+
+const GAME_GRADIENTS: Record<string, string> = {
+  cs2: 'linear-gradient(135deg, #f59e0b, #d97706)',
+  dota2: 'linear-gradient(135deg, #22c55e, #166534)',
+  valorant: 'linear-gradient(135deg, #ef4444, #991b1b)',
+  overwatch: 'linear-gradient(135deg, #f97316, #ea580c)',
+  apex: 'linear-gradient(135deg, #ef4444, #7f1d1d)',
+  lol: 'linear-gradient(135deg, #3b82f6, #1e3a8a)',
+  fortnite: 'linear-gradient(135deg, #a855f7, #6b21a8)',
+  rocket_league: 'linear-gradient(135deg, #06b6d4, #0891b2)',
+  pubg: 'linear-gradient(135deg, #eab308, #854d0e)',
+}
 
 interface Props {
   user: { telegram_id: number; username: string | null; is_registered: boolean } | null
@@ -50,8 +63,8 @@ export default function LobbyCreate({ user }: Props) {
   return (
     <main style={{ minHeight: '100vh', background: 'var(--background)', padding: '24px 16px', paddingTop: 40, paddingBottom: 100 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
-        <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', color: 'var(--foreground)', cursor: 'pointer', fontSize: 20 }}>
-          ←
+        <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', color: 'var(--foreground)', cursor: 'pointer', display: 'flex' }}>
+          <ArrowLeft size={24} />
         </button>
         <h1 style={{ fontSize: 20, fontWeight: 700 }}>Create Lobby</h1>
       </div>
@@ -62,6 +75,22 @@ export default function LobbyCreate({ user }: Props) {
           padding: '10px 14px', borderRadius: 10, fontSize: 13, marginBottom: 16,
         }}>{error}</div>
       )}
+
+      {/* Game preview photo */}
+      <div style={{
+        width: '100%', height: 140, borderRadius: 14, marginBottom: 16,
+        background: game ? (GAME_GRADIENTS[game] || 'linear-gradient(135deg, var(--primary), var(--pink))') : 'var(--secondary)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 8,
+        boxShadow: game ? '0 4px 20px rgba(0,0,0,0.25)' : 'none',
+        transition: 'all 0.3s',
+      }}>
+        <span style={{ fontSize: 48 }}>
+          {games.find(g => g.key === game)?.icon || '🎮'}
+        </span>
+        <span style={{ fontSize: 16, fontWeight: 700, color: '#fff', textShadow: '0 1px 4px rgba(0,0,0,0.4)' }}>
+          {games.find(g => g.key === game)?.display || 'Select a game'}
+        </span>
+      </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         <div>

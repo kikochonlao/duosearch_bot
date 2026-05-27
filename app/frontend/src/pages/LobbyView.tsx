@@ -1,7 +1,32 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { api, LobbyDetail, LobbyMessageInfo } from '../api/client'
+import { ArrowLeft, X, ArrowUp, Lock } from 'lucide-react'
+import { api, LobbyDetail, LobbyMessageInfo, GameInfo } from '../api/client'
 import { impact } from '../utils/haptic'
+
+const GAME_GRADIENTS: Record<string, string> = {
+  cs2: 'linear-gradient(135deg, #f59e0b, #d97706)',
+  dota2: 'linear-gradient(135deg, #22c55e, #166534)',
+  valorant: 'linear-gradient(135deg, #ef4444, #991b1b)',
+  overwatch: 'linear-gradient(135deg, #f97316, #ea580c)',
+  apex: 'linear-gradient(135deg, #ef4444, #7f1d1d)',
+  lol: 'linear-gradient(135deg, #3b82f6, #1e3a8a)',
+  fortnite: 'linear-gradient(135deg, #a855f7, #6b21a8)',
+  rocket_league: 'linear-gradient(135deg, #06b6d4, #0891b2)',
+  pubg: 'linear-gradient(135deg, #eab308, #854d0e)',
+}
+
+function getGameIcon(games: GameInfo[], key: string): string {
+  return games.find(g => g.key === key)?.icon || '🎮'
+}
+
+function getGameDisplay(games: GameInfo[], key: string): string {
+  return games.find(g => g.key === key)?.display || key
+}
+
+function getGameGradient(key: string): string {
+  return GAME_GRADIENTS[key] || 'linear-gradient(135deg, var(--primary), var(--pink))'
+}
 
 interface Props {
   user: { telegram_id: number; username: string | null; is_registered: boolean } | null
@@ -12,6 +37,7 @@ export default function LobbyView({ user }: Props) {
   const navigate = useNavigate()
   const [lobby, setLobby] = useState<LobbyDetail | null>(null)
   const [messages, setMessages] = useState<LobbyMessageInfo[]>([])
+  const [games, setGames] = useState<GameInfo[]>([])
   const [text, setText] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -19,6 +45,8 @@ export default function LobbyView({ user }: Props) {
   const bottomRef = useRef<HTMLDivElement>(null)
 
   const id = Number(lobbyId)
+
+  useEffect(() => { api.getGames().then(data => setGames(data.games)) }, [])
 
   const loadLobby = () => {
     api.getLobby(id).then(setLobby).catch(() => setError('Lobby not found'))
@@ -121,14 +149,22 @@ export default function LobbyView({ user }: Props) {
         display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px',
         borderBottom: '1px solid var(--border)', flexShrink: 0,
       }}>
-        <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', color: 'var(--foreground)', cursor: 'pointer', fontSize: 20 }}>
-          ←
+        <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', color: 'var(--foreground)', cursor: 'pointer', display: 'flex' }}>
+          <ArrowLeft size={24} />
         </button>
+        <div style={{
+          width: 42, height: 42, borderRadius: 10, flexShrink: 0,
+          background: getGameGradient(lobby.game),
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 20, boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
+        }}>
+          {getGameIcon(games, lobby.game)}
+        </div>
         <div style={{ flex: 1 }}>
           <div style={{ fontWeight: 600, fontSize: 16 }}>{lobby.title}</div>
           <div style={{ color: 'var(--muted-foreground)', fontSize: 12 }}>
-            {lobby.game} · {lobby.creator_name} · {lobby.member_count}/{lobby.max_players}
-            {!lobby.is_public ? ' · 🔒' : ''}
+            {getGameDisplay(games, lobby.game)} · {lobby.creator_name} · {lobby.member_count}/{lobby.max_players}
+            {!lobby.is_public ? ' · ' : ''}{!lobby.is_public && <Lock size={12} />}
           </div>
         </div>
         {isCreator && lobby.status === 'open' && (
@@ -161,8 +197,8 @@ export default function LobbyView({ user }: Props) {
             {isCreator && m.role !== 'creator' && (
               <button onClick={() => handleKick(m.user_id)} style={{
                 background: 'none', border: 'none', color: 'var(--muted-foreground)',
-                cursor: 'pointer', fontSize: 18, padding: 4,
-              }}>✕</button>
+                cursor: 'pointer', padding: 4, display: 'flex',
+              }}><X size={18} /></button>
             )}
           </div>
         ))}
@@ -261,9 +297,9 @@ export default function LobbyView({ user }: Props) {
             <button onClick={handleSend} disabled={sending || !text.trim()} style={{
               width: 42, height: 42, borderRadius: 12,
               background: text.trim() ? 'var(--primary)' : 'var(--border)',
-              border: 'none', color: '#fff', fontSize: 18, cursor: text.trim() ? 'pointer' : 'default',
+              border: 'none', color: '#fff', cursor: text.trim() ? 'pointer' : 'default',
               display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-            }}>↑</button>
+            }}><ArrowUp size={20} /></button>
           </div>
         </>
       )}
