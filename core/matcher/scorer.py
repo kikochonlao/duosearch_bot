@@ -47,6 +47,8 @@ def role_complement_score(me: User, other: User, game: str) -> float:
 
 
 def total_score(me: User, other: User, game: str) -> float:
+    if not game or game not in me.games or game not in other.games:
+        return 0.5
     return (
         0.35 * rank_score(me, other, game)
         + 0.35 * role_score(me, other, game)

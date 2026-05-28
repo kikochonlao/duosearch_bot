@@ -12,5 +12,7 @@ class ScoringService:
         candidates = filters.filter_by_language(me, candidates)
         candidates = filters.filter_by_region(me, candidates)
 
-        ranked = ranking.rank_users(me, candidates, game)
-        return ranked[:20]
+        if game:
+            ranked = ranking.rank_users(me, candidates, game)
+            return ranked[:20]
+        return candidates[:20]
