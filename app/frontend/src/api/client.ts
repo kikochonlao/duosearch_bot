@@ -53,7 +53,7 @@ export interface Profile {
   bio: string | null
   photo_url: string | null
   looking_for: string
-  games: Record<string, { rank?: string; roles: Record<string, string> }>
+  games: Record<string, { rank?: string; roles: Record<string, string>; playtime_hours?: number }>
   is_banned: number
   steam_id: string | null
   blog: string | null
@@ -176,6 +176,9 @@ export const api = {
 
   getSteamGames: () =>
     request<{ games: SteamGame[] }>('/profile/steam/games'),
+
+  importSteamGames: () =>
+    request<{ imported: { key: string; name: string; playtime_hours: number }[]; games: Record<string, { rank?: string; roles: Record<string, string>; playtime_hours?: number }> }>('/profile/steam/import', { method: 'POST' }),
 
   login: (initData: string) =>
     request<{ ok: boolean; telegram_id: number; username: string | null; is_registered: boolean; user_id: number | null }>(

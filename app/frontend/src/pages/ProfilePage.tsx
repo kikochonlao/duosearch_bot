@@ -54,6 +54,19 @@ export default function ProfilePage({ user }: Props) {
     } catch (e: any) { alert(e.message) }
   }
 
+  const handleImportSteam = async () => {
+    impact('medium')
+    try {
+      const res = await api.importSteamGames()
+      if (res.imported.length > 0) {
+        setProfile(prev => prev ? { ...prev, games: res.games } : prev)
+        alert(`Imported ${res.imported.length} games: ${res.imported.map(g => g.name).join(', ')}`)
+      } else {
+        alert('No new games to import (already added or none matched)')
+      }
+    } catch (e: any) { alert(e.message) }
+  }
+
   if (loading) {
     return (
       <main style={{ minHeight: '100vh', background: 'var(--background)', padding: 24, paddingTop: 40 }}>
@@ -203,10 +216,16 @@ export default function ProfilePage({ user }: Props) {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
           <h3 className="section-title" style={{ marginBottom: 0 }}>Steam</h3>
           {profile.steam_id ? (
-            <button onClick={handleDisconnectSteam}
-              style={{ background: 'none', border: 'none', color: 'var(--destructive)', cursor: 'pointer', fontSize: 13 }}>
-              Disconnect
-            </button>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={handleImportSteam}
+                style={{ background: 'none', border: 'none', color: 'var(--green)', cursor: 'pointer', fontSize: 13 }}>
+                Import
+              </button>
+              <button onClick={handleDisconnectSteam}
+                style={{ background: 'none', border: 'none', color: 'var(--destructive)', cursor: 'pointer', fontSize: 13 }}>
+                Disconnect
+              </button>
+            </div>
           ) : (
             <button onClick={() => setShowSteamInput(p => !p)}
               style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', fontSize: 13 }}>
@@ -276,7 +295,7 @@ export default function ProfilePage({ user }: Props) {
               <span key={gk} className="chip active" style={{ cursor: 'default' }}>
                 {gi?.display || gk}
                 {gp.rank && <span style={{ color: 'var(--gold)', marginLeft: 4 }}>{gp.rank}</span>}
-                {steamInfo && <span style={{ color: 'var(--muted-foreground)', marginLeft: 4, fontSize: 11 }}>({steamInfo.playtime_hours}h)</span>}
+                {gp.playtime_hours && <span style={{ color: 'var(--muted-foreground)', marginLeft: 4, fontSize: 11 }}>{gp.playtime_hours}h</span>}
               </span>
             )
           })}

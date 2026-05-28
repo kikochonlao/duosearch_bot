@@ -294,3 +294,77 @@ async def steam_games(
 
     games = await get_steam_games(user.steam_id)
     return {"games": games}
+
+
+STEAM_NAME_MAP = {
+    "Counter-Strike 2": "cs2",
+    "Counter-Strike: Global Offensive": "cs2",
+    "CS2": "cs2",
+    "Dota 2": "dota2",
+    "VALORANT": "valorant",
+    "Overwatch 2": "overwatch",
+    "Overwatch": "overwatch",
+    "Apex Legends": "apex",
+    "League of Legends": "lol",
+    "Fortnite": "fortnite",
+    "Rocket League": "rocket_league",
+    "PLAYERUNKNOWN'S BATTLEGROUNDS": "pubg",
+    "PUBG: BATTLEGROUNDS": "pubg",
+    "Rust": "rust",
+    "Minecraft": "minecraft",
+}
+
+
+def _match_steam_game_to_key(name: str) -> str | None:
+    name_lower = name.lower().strip()
+    for steam_name, game_key in STEAM_NAME_MAP.items():
+        if steam_name.lower() == name_lower:
+            return game_key
+    for steam_name, game_key in STEAM_NAME_MAP.items():
+        if steam_name.lower() in name_lower or name_lower in steam_name.lower():
+            return game_key
+    return None
+
+
+@router.post("/steam/import")
+async def import_steam_games(
+    auth: dict = Depends(get_telegram_user),
+    session: AsyncSession = Depends(get_session),
+):
+    telegram_id = await resolve_telegram_id(auth)
+    if not telegram_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No telegram_id")
+
+    result = await session.execute(select(User).where(User.telegram_id == telegram_id))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    if not user.steam_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Steam not connected")
+
+    steam_games = await get_steam_games(user.steam_id)
+    if not steam_games:
+        return {"imported": [], "message": "No Steam games found"}
+
+    current_games = user.get_games()
+    imported = []
+    for sg in steam_games:
+        key = _match_steam_game_to_key(sg["name"])
+        if key and key not in current_games:
+            current_games[key] = {"rank": None, "roles": {}, "playtime_hours": sg["playtime_hours"]}
+            imported.append({"key": key, "name": sg["name"], "playtime_hours": sg["playtime_hours"]})
+        elif key and key in current_games:
+            current_games[key]["playtime_hours"] = sg["playtime_hours"]
+
+    user.set_games(current_games)
+    await session.commit()
+    await session.refresh(user)
+
+    profile = _profile_to_out(user)
+    games_out = {}
+    for gk, gp in profile.games.items():
+        g = {"roles": gp.roles}
+        if gp.rank:
+            g["rank"] = gp.rank
+        games_out[gk] = g
+    return {"imported": imported, "games": games_out}
