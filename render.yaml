@@ -18,6 +18,8 @@ services:
         value: ""
       - key: ECHO_SQL
         value: "false"
+      - key: STEAM_API_KEY
+        sync: false
 
   - type: worker
     name: duosearch-bot
@@ -38,6 +40,8 @@ services:
         value: ""
       - key: ECHO_SQL
         value: "false"
+      - key: STEAM_API_KEY
+        sync: false
 
 databases:
   - name: duosearch-db
