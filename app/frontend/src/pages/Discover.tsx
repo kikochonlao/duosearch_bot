@@ -303,15 +303,20 @@ export default function Discover({ user }: Props) {
             background: 'linear-gradient(180deg, rgba(197,84,212,0.15), var(--card))',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            <div style={{
-              width: 120, height: 120, borderRadius: '50%',
-              border: '3px solid var(--primary)',
-              background: 'linear-gradient(135deg, var(--primary), var(--accent))',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 48, fontWeight: 700, color: '#fff',
-            }}>
-              {current.user.name.charAt(0).toUpperCase()}
-            </div>
+            {current.user.photo_url ? (
+              <img src={current.user.photo_url} alt={current.user.name}
+                style={{ width: 120, height: 120, borderRadius: '50%', border: '3px solid var(--primary)', objectFit: 'cover' }} />
+            ) : (
+              <div style={{
+                width: 120, height: 120, borderRadius: '50%',
+                border: '3px solid var(--primary)',
+                background: 'linear-gradient(135deg, var(--primary), var(--accent))',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 48, fontWeight: 700, color: '#fff',
+              }}>
+                {current.user.name.charAt(0).toUpperCase()}
+              </div>
+            )}
 
             {/* Online indicator */}
             <div style={{
