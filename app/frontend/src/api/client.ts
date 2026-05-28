@@ -18,7 +18,13 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   if (!res.ok) {
     const text = await res.text().catch(() => '')
     let detail = `HTTP ${res.status}`
-    try { const j = JSON.parse(text); detail = j.detail || detail } catch {}
+    try {
+      const j = JSON.parse(text)
+      const d = j.detail
+      if (typeof d === 'string') detail = d
+      else if (Array.isArray(d)) detail = d.map((e: any) => e.msg || JSON.stringify(e)).join('; ')
+      else if (d && typeof d === 'object') detail = JSON.stringify(d)
+    } catch {}
     throw new Error(detail)
   }
 

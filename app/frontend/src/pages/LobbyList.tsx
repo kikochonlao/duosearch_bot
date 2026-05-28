@@ -16,8 +16,8 @@ const GAME_GRADIENTS: Record<string, string> = {
   pubg: 'linear-gradient(135deg, #eab308, #854d0e)',
 }
 
-function getGameIcon(games: GameInfo[], key: string): string {
-  return games.find(g => g.key === key)?.icon || '🎮'
+function getGameLogoUrl(key: string): string {
+  return `/games/${key}.svg`
 }
 
 function getGameGradient(key: string): string {
@@ -135,9 +135,11 @@ export default function LobbyList({ user }: Props) {
               width: 44, height: 44, borderRadius: 12,
               background: getGameGradient(lb.game),
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 22, flexShrink: 0, boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+              flexShrink: 0, boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
             }}>
-              {getGameIcon(games, lb.game)}
+              <img src={getGameLogoUrl(lb.game)} alt=""
+                style={{ width: 26, height: 26, objectFit: 'contain' }}
+              />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontWeight: 600, fontSize: 15, marginBottom: 2 }}>{lb.title}</div>

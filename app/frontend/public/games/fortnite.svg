@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="11 10 26 28" width="48px" height="48px">
+<defs>
+  <mask id="fortnite-mask">
+    <rect x="11" y="10" width="26" height="28" fill="white"/>
+    <path fill="black" d="M19 12L19 36 24 35 24 26 28 26 28 21 24 21 24 17 28 17 29 12z"/>
+  </mask>
+</defs>
+<path fill="currentColor" mask="url(#fortnite-mask)" d="M36 19L37 13 30.84 13 31.44 10 17 10 17 13 11 13 12 20 11 35 17 33.2 17 38.44 26 36.64 26 32.334 36.967 33.068z"/>
+</svg>

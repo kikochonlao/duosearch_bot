@@ -371,7 +371,11 @@ export default function EditProfile({ user }: Props) {
                   fontWeight: active ? 600 : 400,
                   fontSize: 13, textAlign: 'center', fontFamily: 'inherit',
                   transition: 'all 0.15s',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                 }}>
+                <img src={`/games/${g.key}.svg`} alt=""
+                  style={{ width: 16, height: 16, objectFit: 'contain' }}
+                />
                 {g.display}
               </button>
             )
@@ -389,7 +393,11 @@ export default function EditProfile({ user }: Props) {
                 padding: '10px 14px', fontWeight: 600, fontSize: 14,
                 borderBottom: '1px solid var(--border)',
                 background: 'var(--secondary)',
+                display: 'flex', alignItems: 'center', gap: 8,
               }}>
+                <img src={`/games/${gk}.svg`} alt=""
+                  style={{ width: 20, height: 20, objectFit: 'contain' }}
+                />
                 {game.display}
               </div>
               <div style={{ padding: '12px 14px' }}>

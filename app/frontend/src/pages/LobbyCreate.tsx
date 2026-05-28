@@ -16,6 +16,10 @@ const GAME_GRADIENTS: Record<string, string> = {
   pubg: 'linear-gradient(135deg, #eab308, #854d0e)',
 }
 
+function getGameLogoUrl(key: string): string {
+  return `/games/${key}.svg`
+}
+
 interface Props {
   user: { telegram_id: number; username: string | null; is_registered: boolean } | null
 }
@@ -63,7 +67,7 @@ export default function LobbyCreate({ user }: Props) {
   return (
     <main style={{ minHeight: '100vh', background: 'var(--background)', padding: '24px 16px', paddingTop: 40, paddingBottom: 100 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
-        <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', color: 'var(--foreground)', cursor: 'pointer', display: 'flex' }}>
+        <button onClick={() => navigate('/lobbies')} style={{ background: 'none', border: 'none', color: 'var(--foreground)', cursor: 'pointer', display: 'flex' }}>
           <ArrowLeft size={24} />
         </button>
         <h1 style={{ fontSize: 20, fontWeight: 700 }}>Create Lobby</h1>
@@ -84,9 +88,11 @@ export default function LobbyCreate({ user }: Props) {
         boxShadow: game ? '0 4px 20px rgba(0,0,0,0.25)' : 'none',
         transition: 'all 0.3s',
       }}>
-        <span style={{ fontSize: 48 }}>
-          {games.find(g => g.key === game)?.icon || '🎮'}
-        </span>
+        {game && (
+          <img src={getGameLogoUrl(game)} alt=""
+            style={{ width: 64, height: 64, objectFit: 'contain', filter: 'brightness(0) invert(1)' }}
+          />
+        )}
         <span style={{ fontSize: 16, fontWeight: 700, color: '#fff', textShadow: '0 1px 4px rgba(0,0,0,0.4)' }}>
           {games.find(g => g.key === game)?.display || 'Select a game'}
         </span>

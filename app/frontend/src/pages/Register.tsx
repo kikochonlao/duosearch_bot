@@ -363,7 +363,12 @@ export default function Register({ user, onRegistered }: Props) {
         {step === 2 && <><h2 style={{ fontSize: 26, fontWeight: 700, marginBottom: 4 }}>Choose your games</h2><p style={{ color: 'var(--muted-foreground)', fontSize: 14, marginBottom: 28 }}>Select at least one game</p></>}
         {step >= 3 && (() => {
           const g = gamesData.find(x => x.key === selectedGames[step - 3])
-          return g ? <><h2 style={{ fontSize: 26, fontWeight: 700, marginBottom: 4 }}>{g.display}</h2><p style={{ color: 'var(--muted-foreground)', fontSize: 14, marginBottom: 28 }}>Set your rank and roles</p></> : null
+          return g ? <><h2 style={{ fontSize: 26, fontWeight: 700, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 10 }}>
+            <img src={`/games/${g.key}.svg`} alt=""
+              style={{ width: 28, height: 28, objectFit: 'contain' }}
+            />
+            {g.display}
+          </h2><p style={{ color: 'var(--muted-foreground)', fontSize: 14, marginBottom: 28 }}>Set your rank and roles</p></> : null
         })()}
 
         {/* Error */}
