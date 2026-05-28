@@ -57,6 +57,7 @@ export default function App() {
 
   useEffect(() => {
     const tg = window.Telegram?.WebApp
+    tg?.requestFullscreen?.()
     if (tg?.initData) {
       api.login(tg.initData).then(data => {
         setUser(data)

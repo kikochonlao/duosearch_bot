@@ -5,6 +5,7 @@ from sqlalchemy import select
 from app.api.deps.auth import get_telegram_user, resolve_telegram_id
 from app.api.deps.db import get_session
 from app.api.schemas.profile import ProfileOut, ProfileUpdate, GameProfileSchema, BlockReportBody, SteamConnectBody
+from config import settings
 from db.models.user import User
 from db.mappers import db_to_domain
 from services.user_service import upsert_user
@@ -351,7 +352,16 @@ async def import_steam_games(
     if not user.steam_id:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Steam not connected")
 
+    import logging
+    logger = logging.getLogger("duosearch")
     steam_games = await get_steam_games(user.steam_id)
+    logger.info("Steam import: got %d games from API for steam_id=%s, STEAM_API_KEY set=%s", len(steam_games), user.steam_id, bool(settings.STEAM_API_KEY))
+    if steam_games:
+        logger.info("First 3 games: %s", [g["name"] for g in steam_games[:3]])
+        logger.info("First 3 app_ids: %s", [g["app_id"] for g in steam_games[:3]])
+        for sg in steam_games:
+            key = _match_steam_game_to_key(sg["name"], sg.get("app_id"))
+            logger.info("  game=%s app_id=%s match=%s", sg["name"], sg.get("app_id"), key)
     if not steam_games:
         return {"imported": [], "message": "No Steam games found"}
 

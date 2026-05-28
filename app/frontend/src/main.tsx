@@ -32,6 +32,7 @@ declare global {
         }
         setHeaderColor: (color: string) => void
         setBackgroundColor: (color: string) => void
+        requestFullscreen: () => void
         BackButton: {
           isVisible: boolean
           show: () => void
