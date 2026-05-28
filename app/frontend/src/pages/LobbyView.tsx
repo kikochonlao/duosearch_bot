@@ -149,7 +149,7 @@ export default function LobbyView({ user }: Props) {
         display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px',
         borderBottom: '1px solid var(--border)', flexShrink: 0,
       }}>
-        <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', color: 'var(--foreground)', cursor: 'pointer', display: 'flex' }}>
+        <button onClick={() => navigate('/lobbies')} style={{ background: 'none', border: 'none', color: 'var(--foreground)', cursor: 'pointer', display: 'flex' }}>
           <ArrowLeft size={24} />
         </button>
         <div style={{
