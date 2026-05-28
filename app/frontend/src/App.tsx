@@ -120,7 +120,7 @@ export default function App() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--background)', color: 'var(--foreground)', paddingTop: 'env(safe-area-inset-top, 0px)' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--background)', color: 'var(--foreground)', paddingTop: 'env(safe-area-inset-top, 44px)' }}>
       <Routes>
         <Route path="/welcome" element={<Welcome user={user} />} />
         <Route path="/register" element={<Register user={user} onRegistered={() => {
