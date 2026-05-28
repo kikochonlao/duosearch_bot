@@ -15,4 +15,5 @@ class ScoringService:
         if game:
             ranked = ranking.rank_users(me, candidates, game)
             return ranked[:20]
+        candidates = filters.filter_common_games(me, candidates)
         return candidates[:20]

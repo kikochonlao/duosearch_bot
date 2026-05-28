@@ -45,5 +45,10 @@ def filter_by_language(me: User, candidates: list[User]) -> list[User]:
     return [u for u in candidates if my_langs & set(u.language.split(","))]
 
 
+def filter_common_games(me: User, candidates: list[User]) -> list[User]:
+    my_games = set(me.games.keys())
+    return [u for u in candidates if my_games & set(u.games.keys())]
+
+
 def filter_by_region(me: User, candidates: list[User]) -> list[User]:
     return [u for u in candidates if u.region == me.region]
