@@ -5,6 +5,7 @@ from typing import Optional
 class GameProfileSchema(BaseModel):
     rank: Optional[str] = None
     roles: dict[str, str] = {}
+    playtime_hours: Optional[float] = None
 
 
 class SteamGameOut(BaseModel):

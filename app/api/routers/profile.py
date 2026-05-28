@@ -18,7 +18,7 @@ def _profile_to_out(user) -> ProfileOut:
     games_data = user.get_games()
     games_out = {}
     for gk, gp in games_data.items():
-        games_out[gk] = GameProfileSchema(rank=gp.get("rank"), roles=gp.get("roles", {}))
+        games_out[gk] = GameProfileSchema(rank=gp.get("rank"), roles=gp.get("roles", {}), playtime_hours=gp.get("playtime_hours"))
     return ProfileOut(
         id=user.id,
         telegram_id=user.telegram_id,
@@ -102,7 +102,7 @@ async def create_or_update_profile(
         games_dict = {}
         if profile.games:
             for gk, gp in profile.games.items():
-                games_dict[gk] = {"rank": gp.rank, "roles": gp.roles}
+                games_dict[gk] = {"rank": gp.rank, "roles": gp.roles, "playtime_hours": gp.playtime_hours}
 
         domain_user = await upsert_user(
             session=session,
@@ -151,10 +151,10 @@ async def update_profile(
     update_data = update.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         if field == "games" and value is not None:
-            games_dict = {}
+            current = user.get_games()
             for gk, gp in value.items():
-                games_dict[gk] = {"rank": gp.get("rank"), "roles": gp.get("roles", {})}
-            user.set_games(games_dict)
+                current[gk] = {"rank": gp.get("rank"), "roles": gp.get("roles", {}), "playtime_hours": gp.get("playtime_hours") or current.get(gk, {}).get("playtime_hours")}
+            user.set_games(current)
         else:
             setattr(user, field, value)
 
@@ -296,32 +296,41 @@ async def steam_games(
     return {"games": games}
 
 
-STEAM_NAME_MAP = {
-    "Counter-Strike 2": "cs2",
-    "Counter-Strike: Global Offensive": "cs2",
-    "CS2": "cs2",
-    "Dota 2": "dota2",
-    "VALORANT": "valorant",
-    "Overwatch 2": "overwatch",
-    "Overwatch": "overwatch",
-    "Apex Legends": "apex",
-    "League of Legends": "lol",
-    "Fortnite": "fortnite",
-    "Rocket League": "rocket_league",
-    "PLAYERUNKNOWN'S BATTLEGROUNDS": "pubg",
-    "PUBG: BATTLEGROUNDS": "pubg",
-    "Rust": "rust",
-    "Minecraft": "minecraft",
+STEAM_NAME_MAP: dict[str, str] = {
+    "counter-strike 2": "cs2",
+    "counter-strike: global offensive": "cs2",
+    "cs2": "cs2",
+    "dota 2": "dota2",
+    "valorant": "valorant",
+    "overwatch 2": "overwatch",
+    "overwatch": "overwatch",
+    "apex legends": "apex",
+    "league of legends": "lol",
+    "fortnite": "fortnite",
+    "rocket league": "rocket_league",
+    "playerunknown's battlegrounds": "pubg",
+    "pubg: battlegrounds": "pubg",
+    "rust": "rust",
+    "minecraft": "minecraft",
+}
+
+STEAM_APP_IDS: dict[int, str] = {
+    730: "cs2",
+    570: "dota2",
+    700: "dota2",
+    440: "cs2",
+    10: "cs2",
 }
 
 
-def _match_steam_game_to_key(name: str) -> str | None:
-    name_lower = name.lower().strip()
+def _match_steam_game_to_key(name: str, app_id: int | None = None) -> str | None:
+    if app_id and app_id in STEAM_APP_IDS:
+        return STEAM_APP_IDS[app_id]
+    name_clean = name.lower().strip()
+    if name_clean in STEAM_NAME_MAP:
+        return STEAM_NAME_MAP[name_clean]
     for steam_name, game_key in STEAM_NAME_MAP.items():
-        if steam_name.lower() == name_lower:
-            return game_key
-    for steam_name, game_key in STEAM_NAME_MAP.items():
-        if steam_name.lower() in name_lower or name_lower in steam_name.lower():
+        if steam_name in name_clean or name_clean in steam_name:
             return game_key
     return None
 
@@ -349,7 +358,7 @@ async def import_steam_games(
     current_games = user.get_games()
     imported = []
     for sg in steam_games:
-        key = _match_steam_game_to_key(sg["name"])
+        key = _match_steam_game_to_key(sg["name"], sg.get("app_id"))
         if key and key not in current_games:
             current_games[key] = {"rank": None, "roles": {}, "playtime_hours": sg["playtime_hours"]}
             imported.append({"key": key, "name": sg["name"], "playtime_hours": sg["playtime_hours"]})
@@ -363,8 +372,10 @@ async def import_steam_games(
     profile = _profile_to_out(user)
     games_out = {}
     for gk, gp in profile.games.items():
-        g = {"roles": gp.roles}
+        g: dict = {"roles": gp.roles}
         if gp.rank:
             g["rank"] = gp.rank
+        if gp.playtime_hours:
+            g["playtime_hours"] = gp.playtime_hours
         games_out[gk] = g
     return {"imported": imported, "games": games_out}
