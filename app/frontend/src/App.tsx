@@ -57,6 +57,7 @@ export default function App() {
 
   useEffect(() => {
     const tg = window.Telegram?.WebApp
+    tg?.setHeaderColor?.('#08060f')
     tg?.requestFullscreen?.()
     if (tg?.initData) {
       api.login(tg.initData).then(data => {
@@ -119,7 +120,7 @@ export default function App() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--background)', color: 'var(--foreground)' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--background)', color: 'var(--foreground)', paddingTop: 'env(safe-area-inset-top, 0px)' }}>
       <Routes>
         <Route path="/welcome" element={<Welcome user={user} />} />
         <Route path="/register" element={<Register user={user} onRegistered={() => {
