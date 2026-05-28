@@ -52,13 +52,22 @@ function NavBtn({ label, icon: Icon, active, onClick }: { label: string; icon: t
 export default function App() {
   const [user, setUser] = useState<{ telegram_id: number; username: string | null; is_registered: boolean } | null>(null)
   const [loading, setLoading] = useState(true)
+  const [safeTop, setSafeTop] = useState(44)
   const navigate = useNavigate()
   const location = useLocation()
 
   useEffect(() => {
     const tg = window.Telegram?.WebApp
     tg?.setHeaderColor?.('#08060f')
+    if (tg?.safeAreaInset) setSafeTop(tg.safeAreaInset.top)
     tg?.requestFullscreen?.()
+    setTimeout(() => {
+      if (tg?.safeAreaInset && tg.safeAreaInset.top > 0) setSafeTop(tg.safeAreaInset.top)
+    }, 500)
+    const onFs = () => {
+      if (tg?.safeAreaInset) setSafeTop(tg.safeAreaInset.top)
+    }
+    tg?.onEvent?.('fullscreenChanged', onFs)
     if (tg?.initData) {
       api.login(tg.initData).then(data => {
         setUser(data)
@@ -120,7 +129,7 @@ export default function App() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--background)', color: 'var(--foreground)', paddingTop: 'env(safe-area-inset-top, 44px)' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--background)', color: 'var(--foreground)', paddingTop: safeTop }}>
       <Routes>
         <Route path="/welcome" element={<Welcome user={user} />} />
         <Route path="/register" element={<Register user={user} onRegistered={() => {
