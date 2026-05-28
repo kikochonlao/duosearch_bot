@@ -61,6 +61,8 @@ export default function ProfilePage({ user }: Props) {
       if (res.imported.length > 0) {
         setProfile(prev => prev ? { ...prev, games: res.games } : prev)
         alert(`Imported ${res.imported.length} games: ${res.imported.map(g => g.name).join(', ')}`)
+      } else if (res.message) {
+        alert(res.message)
       } else {
         alert('No new games to import (already added or none matched)')
       }

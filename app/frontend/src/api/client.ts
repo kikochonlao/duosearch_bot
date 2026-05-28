@@ -178,7 +178,7 @@ export const api = {
     request<{ games: SteamGame[] }>('/profile/steam/games'),
 
   importSteamGames: () =>
-    request<{ imported: { key: string; name: string; playtime_hours: number }[]; games: Record<string, { rank?: string; roles: Record<string, string>; playtime_hours?: number }> }>('/profile/steam/import', { method: 'POST' }),
+    request<{ imported: { key: string; name: string; playtime_hours: number }[]; games: Record<string, { rank?: string; roles: Record<string, string>; playtime_hours?: number }>; message?: string }>('/profile/steam/import', { method: 'POST' }),
 
   login: (initData: string) =>
     request<{ ok: boolean; telegram_id: number; username: string | null; is_registered: boolean; user_id: number | null }>(

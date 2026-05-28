@@ -52,22 +52,23 @@ function NavBtn({ label, icon: Icon, active, onClick }: { label: string; icon: t
 export default function App() {
   const [user, setUser] = useState<{ telegram_id: number; username: string | null; is_registered: boolean } | null>(null)
   const [loading, setLoading] = useState(true)
-  const [safeTop, setSafeTop] = useState(44)
+  const [safeTop, setSafeTop] = useState(52)
   const navigate = useNavigate()
   const location = useLocation()
 
   useEffect(() => {
     const tg = window.Telegram?.WebApp
     tg?.setHeaderColor?.('#08060f')
-    if (tg?.safeAreaInset) setSafeTop(tg.safeAreaInset.top)
-    tg?.requestFullscreen?.()
-    setTimeout(() => {
-      if (tg?.safeAreaInset && tg.safeAreaInset.top > 0) setSafeTop(tg.safeAreaInset.top)
-    }, 500)
-    const onFs = () => {
-      if (tg?.safeAreaInset) setSafeTop(tg.safeAreaInset.top)
+    const updateSafe = () => {
+      const fromContent = tg?.contentSafeAreaInset?.top
+      const fromSafe = tg?.safeAreaInset?.top
+      const val = Math.max(fromContent || 0, fromSafe || 0, 52)
+      setSafeTop(val)
     }
-    tg?.onEvent?.('fullscreenChanged', onFs)
+    updateSafe()
+    tg?.requestFullscreen?.()
+    setTimeout(updateSafe, 600)
+    tg?.onEvent?.('fullscreenChanged', updateSafe)
     if (tg?.initData) {
       api.login(tg.initData).then(data => {
         setUser(data)

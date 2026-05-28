@@ -34,6 +34,7 @@ declare global {
         setBackgroundColor: (color: string) => void
         requestFullscreen: () => void
         safeAreaInset: { top: number; bottom: number; left: number; right: number }
+        contentSafeAreaInset: { top: number; bottom: number; left: number; right: number }
         onEvent: (event: string, cb: (...args: any[]) => void) => void
         offEvent: (event: string, cb: (...args: any[]) => void) => void
         BackButton: {

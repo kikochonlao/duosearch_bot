@@ -363,7 +363,7 @@ async def import_steam_games(
             key = _match_steam_game_to_key(sg["name"], sg.get("app_id"))
             logger.info("  game=%s app_id=%s match=%s", sg["name"], sg.get("app_id"), key)
     if not steam_games:
-        return {"imported": [], "message": "No Steam games found"}
+        return {"imported": [], "message": "No Steam games found. Make sure your Steam game details are set to Public in Privacy Settings."}
 
     current_games = user.get_games()
     imported = []
