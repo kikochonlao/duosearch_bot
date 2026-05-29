@@ -6,7 +6,6 @@ from db.models.like import Like
 from db.models.block import Block
 from db.models.skip import Skip
 from db.models.chat_session import ChatSession
-from db.models.duo_relationship import DuoRelationship, XPEvent, UnlockedAchievement
 from db.mappers import db_to_domain
 from core.models.user import User
 
@@ -55,6 +54,7 @@ class LikeRepository:
 
         if is_mutual:
             from db.models.match import Match
+            from db.models.duo_relationship import DuoRelationship, XPEvent, UnlockedAchievement
             match = Match(user1_id=from_user.id, user2_id=to_user.id)
             self.session.add(match)
             await self.session.flush()
