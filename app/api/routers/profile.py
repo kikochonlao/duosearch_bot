@@ -11,6 +11,8 @@ from db.mappers import db_to_domain
 from services.user_service import upsert_user
 from db.repositories.report_repo import ReportRepository
 from services.steam_service import verify_steam_id, get_steam_games
+import logging
+logger = logging.getLogger("duosearch")
 
 router = APIRouter()
 
@@ -78,8 +80,6 @@ async def create_or_update_profile(
     auth: dict = Depends(get_telegram_user),
     session: AsyncSession = Depends(get_session),
 ):
-    import logging
-    logger = logging.getLogger("duosearch")
     try:
         telegram_id = await resolve_telegram_id(auth)
         username = None
@@ -257,7 +257,33 @@ async def connect_steam(
 
     user.steam_id = steam_id
     await session.commit()
-    return {"ok": True, "steam_id": steam_id}
+
+    steam_games = await get_steam_games(steam_id)
+    current_games = user.get_games()
+    imported = []
+    if steam_games:
+        for sg in steam_games:
+            if sg["playtime_hours"] < 1:
+                continue
+            key = _match_steam_game_to_key(sg["name"], sg.get("app_id"))
+            if key and key not in current_games:
+                current_games[key] = {"rank": None, "roles": {}, "playtime_hours": sg["playtime_hours"]}
+                imported.append({"key": key, "name": sg["name"], "playtime_hours": sg["playtime_hours"]})
+            elif key and key in current_games:
+                current_games[key]["playtime_hours"] = sg["playtime_hours"]
+        user.set_games(current_games)
+        await session.commit()
+
+    profile = _profile_to_out(user)
+    games_out = {}
+    for gk, gp in profile.games.items():
+        g: dict = {"roles": gp.roles}
+        if gp.rank:
+            g["rank"] = gp.rank
+        if gp.playtime_hours:
+            g["playtime_hours"] = gp.playtime_hours
+        games_out[gk] = g
+    return {"ok": True, "steam_id": steam_id, "imported": imported, "games": games_out}
 
 
 @router.post("/steam/disconnect")
@@ -352,8 +378,6 @@ async def import_steam_games(
     if not user.steam_id:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Steam not connected")
 
-    import logging
-    logger = logging.getLogger("duosearch")
     steam_games = await get_steam_games(user.steam_id)
     logger.info("Steam import: got %d games from API for steam_id=%s, STEAM_API_KEY set=%s", len(steam_games), user.steam_id, bool(settings.STEAM_API_KEY))
     if steam_games:
@@ -368,6 +392,8 @@ async def import_steam_games(
     current_games = user.get_games()
     imported = []
     for sg in steam_games:
+        if sg["playtime_hours"] < 1:
+            continue
         key = _match_steam_game_to_key(sg["name"], sg.get("app_id"))
         if key and key not in current_games:
             current_games[key] = {"rank": None, "roles": {}, "playtime_hours": sg["playtime_hours"]}

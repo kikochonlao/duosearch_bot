@@ -35,14 +35,15 @@ export default function ProfilePage({ user }: Props) {
     impact('light')
     try {
       const res = await api.connectSteam(steamInput.trim())
-      setProfile(prev => prev ? { ...prev, steam_id: res.steam_id } : prev)
+      setProfile(prev => prev ? { ...prev, steam_id: res.steam_id, games: res.games || prev?.games } : prev)
       setShowSteamInput(false)
       setSteamInput('')
-      setSteamLoading(true)
+      if (res.imported && res.imported.length > 0) {
+        alert(`Imported ${res.imported.length} games: ${res.imported.map(g => g.name).join(', ')}`)
+      }
       const sg = await api.getSteamGames()
       setSteamGames(sg.games)
     } catch (e: any) { alert(e.message) }
-    finally { setSteamLoading(false) }
   }
 
   const handleDisconnectSteam = async () => {

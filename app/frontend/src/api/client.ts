@@ -169,7 +169,7 @@ export const api = {
     request<{ ok: boolean; auto_banned: boolean; total_reports: number }>('/profile/report', { method: 'POST', body: JSON.stringify({ target_telegram_id: targetTelegramId, reason }), headers: { 'Content-Type': 'application/json' } }),
 
   connectSteam: (steamId: string) =>
-    request<{ ok: boolean; steam_id: string }>('/profile/steam/connect', { method: 'POST', body: JSON.stringify({ steam_id: steamId }), headers: { 'Content-Type': 'application/json' } }),
+    request<{ ok: boolean; steam_id: string; imported?: { key: string; name: string; playtime_hours: number }[]; games?: Record<string, { rank?: string; roles: Record<string, string>; playtime_hours?: number }> }>('/profile/steam/connect', { method: 'POST', body: JSON.stringify({ steam_id: steamId }), headers: { 'Content-Type': 'application/json' } }),
 
   disconnectSteam: () =>
     request<{ ok: boolean }>('/profile/steam/disconnect', { method: 'POST' }),
