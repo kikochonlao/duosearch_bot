@@ -9,3 +9,4 @@ from .skip import Skip
 from .lobby import Lobby
 from .lobby_member import LobbyMember
 from .lobby_message import LobbyMessage
+from .duo_relationship import DuoRelationship, XPEvent, UnlockedAchievement

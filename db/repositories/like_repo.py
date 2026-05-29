@@ -6,6 +6,7 @@ from db.models.like import Like
 from db.models.block import Block
 from db.models.skip import Skip
 from db.models.chat_session import ChatSession
+from db.models.duo_relationship import DuoRelationship, XPEvent, UnlockedAchievement
 from db.mappers import db_to_domain
 from core.models.user import User
 
@@ -59,6 +60,13 @@ class LikeRepository:
             await self.session.flush()
             cs = ChatSession(match_id=match.id, user1_id=from_user.id, user2_id=to_user.id)
             self.session.add(cs)
+            rel = DuoRelationship(match_id=match.id, user1_id=from_user.id, user2_id=to_user.id, level=1, xp=50)
+            self.session.add(rel)
+            await self.session.flush()
+            ev = XPEvent(relationship_id=rel.id, activity_type="first_match", xp_awarded=50, metadata='{"title":"First Match"}')
+            self.session.add(ev)
+            ua = UnlockedAchievement(relationship_id=rel.id, achievement_key="first_match")
+            self.session.add(ua)
             await self.session.flush()
             return True, match.id, to_user
 

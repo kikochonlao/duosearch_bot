@@ -17,6 +17,7 @@ import UserProfile from './pages/UserProfile'
 import LobbyList from './pages/LobbyList'
 import LobbyCreate from './pages/LobbyCreate'
 import LobbyView from './pages/LobbyView'
+import DuoJourney from './pages/DuoJourney'
 
 const MAINTENANCE = false
 
@@ -149,6 +150,7 @@ export default function App() {
         <Route path="/match/:matchId" element={<MatchScreen user={user} />} />
         <Route path="/settings" element={<Settings user={user} />} />
         <Route path="/user/:telegramId" element={<UserProfile user={user} />} />
+        <Route path="/duo/:matchId" element={<DuoJourney />} />
         <Route path="*" element={<Welcome user={user} />} />
       </Routes>
 

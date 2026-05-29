@@ -155,6 +155,41 @@ export interface LobbyMessageInfo {
   created_at: string
 }
 
+export interface DuoStatus {
+  match_id: number
+  partner_name: string
+  partner_photo: string | null
+  level: number
+  level_name: string
+  xp: number
+  xp_next: number
+  progress: number
+  duo_name: string | null
+  created_at: string
+}
+
+export interface Memory {
+  id: number
+  memory_type: string
+  title: string
+  description: string | null
+  icon: string
+  xp_earned: number
+  rarity: string
+  created_at: string
+}
+
+export interface AchievementDef {
+  key: string
+  title: string
+  description: string
+  category: string
+  rarity: string
+  xp_reward: number
+  unlocked: boolean
+  unlocked_at: string | null
+}
+
 export const api = {
   blockUser: (targetTelegramId: number) =>
     request<{ ok: boolean }>('/profile/block', { method: 'POST', body: JSON.stringify({ target_telegram_id: targetTelegramId }), headers: { 'Content-Type': 'application/json' } }),
@@ -262,4 +297,18 @@ export const api = {
 
   sendLobbyMessage: (id: number, text: string) =>
     request<LobbyMessageInfo>(`/lobbies/${id}/messages`, { method: 'POST', body: JSON.stringify({ text }), headers: { 'Content-Type': 'application/json' } }),
+
+  getDuoStatus: (matchId: number) =>
+    request<DuoStatus>(`/duo/status/${matchId}`),
+
+  getAchievements: (matchId: number) =>
+    request<AchievementDef[]>(`/duo/achievements/${matchId}`),
+
+  getMemories: (matchId: number) =>
+    request<Memory[]>(`/duo/memories/${matchId}`),
+
+  addXp: (matchId: number, activityType: string, metadata?: string) =>
+    request<{ ok: boolean; xp_awarded: number; total_xp: number; level: number; level_name: string; leveled_up: boolean; new_achievements: string[] }>(
+      '/duo/xp', { method: 'POST', body: JSON.stringify({ match_id: matchId, activity_type: activityType, metadata }), headers: { 'Content-Type': 'application/json' } },
+    ),
 }

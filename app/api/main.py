@@ -7,7 +7,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routers import auth, profile, discover, matches, chat, games, lobbies
+from app.api.routers import auth, profile, discover, matches, chat, games, lobbies, duo
 
 _bot_task: asyncio.Task | None = None
 
@@ -74,6 +74,7 @@ app.include_router(matches.router, prefix="/api/matches", tags=["matches"])
 app.include_router(chat.router, prefix="/api/chat", tags=["chat"])
 app.include_router(games.router, prefix="/api/games", tags=["games"])
 app.include_router(lobbies.router, prefix="/api/lobbies", tags=["lobbies"])
+app.include_router(duo.router, prefix="/api/duo", tags=["duo"])
 
 
 @app.get("/api/health")

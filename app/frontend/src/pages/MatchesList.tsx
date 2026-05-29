@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, Heart, MessageCircle } from 'lucide-react'
+import { Search, Heart, MessageCircle, Sparkles } from 'lucide-react'
 import { api, MatchItem } from '../api/client'
 
 interface Props {
@@ -109,15 +109,25 @@ export default function MatchesList({ user }: Props) {
             </div>
           </div>
 
-          {m.has_active_chat && (
-            <span style={{
-              borderRadius: 8, background: 'rgba(77,212,122,0.12)',
-              color: 'var(--green)', padding: '2px 8px', fontSize: 11, fontWeight: 500,
-              whiteSpace: 'nowrap',
-            }}>
-              <MessageCircle size={12} /> Active
+          <div style={{ display: 'flex', gap: 4 }}>
+            {m.has_active_chat && (
+              <span style={{
+                borderRadius: 8, background: 'rgba(77,212,122,0.12)',
+                color: 'var(--green)', padding: '2px 8px', fontSize: 11, fontWeight: 500,
+                whiteSpace: 'nowrap',
+              }}>
+                <MessageCircle size={12} /> Active
+              </span>
+            )}
+            <span onClick={e => { e.stopPropagation(); navigate(`/duo/${m.id}`) }}
+              style={{
+                borderRadius: 8, background: 'rgba(197,84,212,0.12)',
+                color: 'var(--primary)', padding: '2px 8px', fontSize: 11, fontWeight: 500,
+                whiteSpace: 'nowrap', cursor: 'pointer',
+              }}>
+              <Sparkles size={12} /> Duo
             </span>
-          )}
+          </div>
         </div>
       ))}
     </main>

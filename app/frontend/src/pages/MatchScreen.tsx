@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom'
-import { PartyPopper, MessageCircle } from 'lucide-react'
+import { PartyPopper, MessageCircle, Heart } from 'lucide-react'
 
 interface Props {
   user: { telegram_id: number; username: string | null; is_registered: boolean } | null
@@ -25,6 +25,10 @@ export default function MatchScreen({ user }: Props) {
       <button className="btn-primary" onClick={() => navigate(`/chat/${matchId}`)}
         style={{ maxWidth: 280, marginBottom: 12, animation: 'slideUp 0.5s ease-out 0.4s both' }}>
         <MessageCircle size={18} /> Send a message
+      </button>
+      <button className="btn-primary" onClick={() => navigate(`/duo/${matchId}`)}
+        style={{ maxWidth: 280, marginBottom: 12, background: 'linear-gradient(135deg, var(--pink), var(--primary))', animation: 'slideUp 0.5s ease-out 0.45s both' }}>
+        <Heart size={18} /> View Duo Journey
       </button>
       <button className="btn-secondary" onClick={() => navigate('/discover')} style={{ maxWidth: 280, animation: 'slideUp 0.5s ease-out 0.5s both' }}>
         Keep browsing
