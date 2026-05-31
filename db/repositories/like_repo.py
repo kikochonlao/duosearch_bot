@@ -63,7 +63,7 @@ class LikeRepository:
             rel = DuoRelationship(match_id=match.id, user1_id=from_user.id, user2_id=to_user.id, level=1, xp=50)
             self.session.add(rel)
             await self.session.flush()
-            ev = XPEvent(relationship_id=rel.id, activity_type="first_match", xp_awarded=50, metadata='{"title":"First Match"}')
+            ev = XPEvent(relationship_id=rel.id, activity_type="first_match", xp_awarded=50, payload='{"title":"First Match"}')
             self.session.add(ev)
             ua = UnlockedAchievement(relationship_id=rel.id, achievement_key="first_match")
             self.session.add(ua)

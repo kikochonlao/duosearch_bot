@@ -1,7 +1,8 @@
-from sqlalchemy import ForeignKey, UniqueConstraint, Integer, String, Text, DateTime, func
+from datetime import datetime
+from typing import Optional
+from sqlalchemy import ForeignKey, Integer, String, Text, DateTime, func, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 from db.base import Base
-from typing import Optional
 
 
 class DuoRelationship(Base):
@@ -15,7 +16,7 @@ class DuoRelationship(Base):
     xp: Mapped[int] = mapped_column(Integer, default=0)
     duo_name: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     created_at: Mapped[Optional[datetime]] = mapped_column(DateTime, server_default=func.now())
-    updated_at: Mapped[Optional[datetime]] = mapped_column(DateTime, server_default=func.now())
+    updated_at: Mapped[Optional[datetime]] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())
 
 
 class XPEvent(Base):
@@ -25,7 +26,7 @@ class XPEvent(Base):
     relationship_id: Mapped[int] = mapped_column(ForeignKey("duo_relationships.id"))
     activity_type: Mapped[str] = mapped_column(String, nullable=False)
     xp_awarded: Mapped[int] = mapped_column(Integer, nullable=False)
-    metadata: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    payload: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     created_at: Mapped[Optional[datetime]] = mapped_column(DateTime, server_default=func.now())
 
 

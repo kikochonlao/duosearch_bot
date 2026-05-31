@@ -69,12 +69,12 @@ async def _get_or_create_relationship(session: AsyncSession, match_id: int, user
     return rel
 
 
-async def _add_xp(session: AsyncSession, rel: DuoRelationship, amount: int, activity_type: str, metadata: str | None = None):
+async def _add_xp(session: AsyncSession, rel: DuoRelationship, amount: int, activity_type: str, payload: str | None = None):
     rel.xp += amount
     new_level, _, _ = _calc_level(rel.xp)
     leveled_up = new_level > rel.level
     rel.level = new_level
-    ev = XPEvent(relationship_id=rel.id, activity_type=activity_type, xp_awarded=amount, metadata=metadata)
+    ev = XPEvent(relationship_id=rel.id, activity_type=activity_type, xp_awarded=amount, payload=payload)
     session.add(ev)
     await session.flush()
     return leveled_up
@@ -194,7 +194,7 @@ async def add_xp(
 
     rel = await _get_or_create_relationship(session, body.match_id, match.user1_id, match.user2_id)
     amount = XP_REWARDS.get(body.activity_type, 10)
-    leveled_up = await _add_xp(session, rel, amount, body.activity_type, body.metadata)
+    leveled_up = await _add_xp(session, rel, amount, body.activity_type, body.payload)
 
     newly_unlocked = await _check_achievements(session, rel)
     await session.commit()
@@ -297,7 +297,7 @@ async def get_memories(
             id=ev.id,
             memory_type=ev.activity_type,
             title=title,
-            description=ev.metadata,
+            description=ev.payload,
             icon=icon,
             xp_earned=ev.xp_awarded,
             rarity=rarity,

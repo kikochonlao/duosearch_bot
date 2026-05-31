@@ -19,7 +19,7 @@ class XpEventOut(BaseModel):
     id: int
     activity_type: str
     xp_awarded: int
-    metadata: Optional[str] = None
+    payload: Optional[str] = None
     created_at: str
 
 
@@ -48,4 +48,4 @@ class MemoryOut(BaseModel):
 class AddXpBody(BaseModel):
     match_id: int
     activity_type: str
-    metadata: Optional[str] = None
+    payload: Optional[str] = None
