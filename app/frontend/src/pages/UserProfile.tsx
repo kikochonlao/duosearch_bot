@@ -172,11 +172,7 @@ export default function UserProfile({ user }: Props) {
                 background: 'var(--card)', border: '1px solid var(--border)',
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  {gi?.icon ? (
-                    <img src={gi.icon} alt="" style={{ width: 28, height: 28 }} />
-                  ) : (
-                    <div style={{ width: 28, height: 28, borderRadius: 6, background: 'rgba(197,84,212,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>🎮</div>
-                  )}
+                  <span style={{ fontSize: 26, lineHeight: 1 }}>{gi?.icon || '🎮'}</span>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontWeight: 600, fontSize: 15 }}>{gi?.display || gk}</div>
                     {gp.rank && (
