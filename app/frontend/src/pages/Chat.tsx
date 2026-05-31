@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { Ban, AlertTriangle, ArrowUp, Check, CheckCheck, Sparkles } from 'lucide-react'
 import { api, MessageItem, MatchItem } from '../api/client'
 import { impact } from '../utils/haptic'
+import { tgAlert, tgConfirm, tgPrompt } from '../utils/telegram'
 
 interface Props {
   user: { telegram_id: number; username: string | null; is_registered: boolean } | null
@@ -64,24 +65,24 @@ export default function Chat({ user }: Props) {
   const handleBlock = async () => {
     if (!matchInfo) return
     const targetId = matchInfo.matched_user.telegram_id
-    if (!confirm(`Block ${matchInfo.matched_user.name}?`)) return
+    if (!(await tgConfirm(`Block ${matchInfo.matched_user.name}?`))) return
     try {
       await api.blockUser(targetId)
-      alert('User blocked')
+      await tgAlert('User blocked')
       navigate('/chats')
-    } catch (e: any) { alert(e.message) }
+    } catch (e: any) { await tgAlert(e.message) }
     setShowMenu(false)
   }
 
   const handleReport = async () => {
     if (!matchInfo) return
-    const reason = prompt('Reason for report:')
+    const reason = await tgPrompt('Reason for report:')
     if (!reason) return
     try {
       const res = await api.reportUser(matchInfo.matched_user.telegram_id, reason)
-      alert(res.auto_banned ? 'User was banned due to multiple reports' : 'Report submitted')
+      await tgAlert(res.auto_banned ? 'User was banned due to multiple reports' : 'Report submitted')
       navigate('/chats')
-    } catch (e: any) { alert(e.message) }
+    } catch (e: any) { await tgAlert(e.message) }
     setShowMenu(false)
   }
 
@@ -93,7 +94,7 @@ export default function Chat({ user }: Props) {
       const msg = await api.sendMessage(parseInt(matchId), text.trim())
       setMessages(prev => [...prev, msg])
       setText('')
-    } catch (e: any) { alert(e.message) }
+    } catch (e: any) { await tgAlert(e.message) }
     finally { setSending(false); inputRef.current?.focus() }
   }
 

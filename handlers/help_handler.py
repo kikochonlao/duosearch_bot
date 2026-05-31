@@ -37,6 +37,6 @@ async def help_command(message: Message):
     # Delete user's command message
     try:
         await message.delete()
-    except:
+    except Exception:
         pass
     await message.answer(HELP_TEXT)

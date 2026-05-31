@@ -10,15 +10,12 @@ from db.repositories.chat_repo import ChatRepository
 from db.models.match import Match
 from db.models.user import User as DBUser
 from db.models.chat_session import ChatSession
+from utils.constants import esc as _esc
 
 router = Router()
 logger = logging.getLogger("duosearch.matches")
 
 GENDER_LABELS = {"M": "👨‍🦰", "F": "👩‍🦰", "NB": "🧑"}
-
-
-def _esc(text: str) -> str:
-    return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 
 @router.message(Command("matches"))

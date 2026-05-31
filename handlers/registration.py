@@ -11,6 +11,7 @@ from states.feed import FeedState
 from keyboards.ranks import RANKS, get_game_ranks, has_roles, rank_per_role
 from keyboards.games import get_game_roles
 from services.user_service import upsert_user, get_user
+from utils.constants import LANGS, REGIONS, GENDER_LABELS, esc as _esc
 
 router = Router()
 logger = logging.getLogger("duosearch.registration")
@@ -23,26 +24,6 @@ MAIN_MENU = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text="💜 Поддержать проект", callback_data="menu_donate")],
     [InlineKeyboardButton(text="❓ Помощь", callback_data="menu_help")],
 ])
-
-LANGS = {
-    "ru": "🇷🇺 Русский",
-    "en": "🇺🇸 English",
-    "uk": "🇺🇦 Українська",
-    "kz": "🇰🇿 Қазақша",
-    "by": "🇧🇾 Беларуская",
-    "uz": "🇺🇿 Oʻzbekcha",
-}
-
-GENDER_LABELS = {"M": "👨 Парень", "F": "👩 Девушка"}
-
-REGIONS = {
-    "cis": "🌍 СНГ",
-    "eu": "🌍 Europe",
-    "na": "🌎 North America",
-    "asia": "🌏 Asia",
-    "sa": "🌎 South America",
-    "oce": "🏝️ Oceania",
-}
 
 
 async def safe_edit(call, **kwargs):
@@ -62,10 +43,6 @@ def _rank_cb_key(rank: str) -> str:
 
 def _rank_from_cb(cb: str) -> str:
     return cb.replace("__", " ")
-
-
-def _esc(text: str) -> str:
-    return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 
 # ---------------- PING (diagnostic) ----------------
@@ -143,7 +120,7 @@ async def menu_myfeed(call: CallbackQuery, session: AsyncSession, state: FSMCont
     # Delete the original message (main menu) to avoid chat spam
     try:
         await call.message.delete()
-    except:
+    except Exception:
         pass
     
     # Show game selection keyboard with ALL games pre-selected by default
@@ -343,7 +320,7 @@ async def menu_help(call: CallbackQuery):
     # Delete original message (main menu) to avoid chat spam
     try:
         await call.message.delete()
-    except: 
+    except Exception: 
         pass
     await call.bot.send_message(call.from_user.id, help_text)
     await call.answer()
@@ -481,7 +458,7 @@ async def select_gender(call: CallbackQuery, state: FSMContext):
     # Delete the question message
     try:
         await call.message.delete()
-    except:
+    except Exception:
         pass
     await call.message.answer(
         "Выбери языки, на которых говоришь:",
@@ -523,7 +500,7 @@ async def lang_done(call: CallbackQuery, state: FSMContext):
     # Delete the question message
     try:
         await call.message.delete()
-    except:
+    except Exception:
         pass
     await state.set_state(RegistrationState.region)
     logger.info("User %s confirmed languages=%s", call.from_user.id, langs)
@@ -544,7 +521,7 @@ async def select_region(call: CallbackQuery, state: FSMContext):
     logger.info("User %s set region=%s", call.from_user.id, region)
     try:
         await call.message.delete()
-    except:
+    except Exception:
         pass
     await call.message.answer(
         "Выбери свои игры:",
@@ -586,7 +563,7 @@ async def games_done(call: CallbackQuery, state: FSMContext):
 
     try:
         await call.message.delete()
-    except:
+    except Exception:
         pass
 
     await state.update_data(game_idx=0)
@@ -675,7 +652,7 @@ async def roles_done(call: CallbackQuery, state: FSMContext):
 
     try:
         await call.message.delete()
-    except:
+    except Exception:
         pass
 
     summary = ", ".join(_esc(r) for r in roles)
@@ -782,7 +759,7 @@ async def rank_confirm_simple(call: CallbackQuery, state: FSMContext):
     logger.info("User %s confirmed rank=%s for game=%s", call.from_user.id, rank, game)
     try:
         await call.message.delete()
-    except:
+    except Exception:
         pass
     await call.message.answer("✅ Подтверждено!")
     await _next_game_or_finish(call, state, data.get("games", []), data.get("game_idx", 0))
@@ -812,7 +789,7 @@ async def rank_confirm_roles(call: CallbackQuery, state: FSMContext):
 
     try:
         await call.message.delete()
-    except:
+    except Exception:
         pass
 
     await call.message.answer("✅ Подтверждено!")
@@ -883,7 +860,7 @@ async def finalize_registration(call: CallbackQuery, state: FSMContext, session:
     # Delete the "Все игры заполнены" message
     try:
         await call.message.delete()
-    except:
+    except Exception:
         pass
 
     try:

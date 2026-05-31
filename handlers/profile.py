@@ -10,6 +10,7 @@ from states.registration import RegistrationState
 from keyboards.ranks import RANKS, has_roles, get_game_ranks
 from keyboards.games import get_all_game_keys, get_game_roles
 from services.user_service import get_user, upsert_user
+from utils.constants import LANGS, REGIONS, esc as _esc
 
 router = Router()
 logger = logging.getLogger("duosearch.profile")
@@ -23,29 +24,6 @@ class EditState(StatesGroup):
     region = State()
     games = State()
     game_ranks = State()
-
-
-def _esc(text: str) -> str:
-    return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-
-
-LANGS = {
-    "ru": "🇷🇺 Русский",
-    "en": "🇺🇸 English",
-    "uk": "🇺🇦 Українська",
-    "kz": "🇰🇿 Қазақша",
-    "by": "🇧🇾 Беларуская",
-    "uz": "🇺🇿 Oʻzbekcha",
-}
-
-REGIONS = {
-    "cis": "🌍 СНГ",
-    "eu": "🌍 Europe",
-    "na": "🌎 North America",
-    "asia": "🌏 Asia",
-    "sa": "🌎 South America",
-    "oce": "🏝️ Oceania",
-}
 
 
 def _format_profile_text(user) -> str:
@@ -132,7 +110,7 @@ async def edit_name(call: CallbackQuery, state: FSMContext):
     # Delete the "Что хочешь изменить?" message
     try:
         await call.message.delete()
-    except:
+    except Exception:
         pass
     msg = await call.message.answer("Введи новое имя:")
     await state.update_data(question_msg_id=msg.message_id)
@@ -183,7 +161,7 @@ async def edit_age(call: CallbackQuery, state: FSMContext):
     # Delete the "Что хочешь изменить?" message
     try:
         await call.message.delete()
-    except:
+    except Exception:
         pass
     msg = await call.message.answer("Сколько тебе лет?")
     await state.update_data(question_msg_id=msg.message_id)
@@ -240,7 +218,7 @@ async def save_gender(call: CallbackQuery, state: FSMContext, session: AsyncSess
     # Delete the "Выбери пол:" question
     try:
         await call.message.delete()
-    except:
+    except Exception:
         pass
     user = await get_user(session, call.from_user.id)
     if user:
@@ -263,7 +241,7 @@ async def edit_langs(call: CallbackQuery, state: FSMContext, session: AsyncSessi
     # Delete the "Что хочешь изменить?" message
     try:
         await call.message.delete()
-    except:
+    except Exception:
         pass
     user = await get_user(session, call.from_user.id)
     current_langs = user.language.split(",") if user else []
@@ -320,7 +298,7 @@ async def save_langs(call: CallbackQuery, state: FSMContext, session: AsyncSessi
     # Delete the "Выбери языки:" question
     try:
         await call.message.delete()
-    except:
+    except Exception:
         pass
 
     user = await get_user(session, call.from_user.id)
@@ -344,7 +322,7 @@ async def edit_region(call: CallbackQuery, state: FSMContext):
     # Delete the "Что хочешь изменить?" message
     try:
         await call.message.delete()
-    except:
+    except Exception:
         pass
     kb = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text=t.split()[-1] if " " in t else t, callback_data=f"edit_region_{c}")]
@@ -360,7 +338,7 @@ async def save_region(call: CallbackQuery, state: FSMContext, session: AsyncSess
     # Delete the "Выбери сервер:" question
     try:
         await call.message.delete()
-    except:
+    except Exception:
         pass
     user = await get_user(session, call.from_user.id)
     if user:
@@ -390,7 +368,7 @@ async def edit_games(call: CallbackQuery, state: FSMContext, session: AsyncSessi
     # Delete the "Что хочешь изменить?" message
     try:
         await call.message.delete()
-    except:
+    except Exception:
         pass
 
     # Save current user data to state for later update

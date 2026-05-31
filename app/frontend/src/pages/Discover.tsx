@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Search, Settings, X, Heart, Star } from 'lucide-react'
 import { api, Candidate, GameInfo } from '../api/client'
@@ -27,10 +27,22 @@ export default function Discover({ user }: Props) {
   const [filterAgeMax, setFilterAgeMax] = useState(99)
 
   const hasActiveFilters = filterGender || filterRegion || filterAgeMin > 0 || filterAgeMax < 99
+  const ageTimer = useRef<ReturnType<typeof setTimeout>>()
+  const [ageMinDebounced, setAgeMinDebounced] = useState(0)
+  const [ageMaxDebounced, setAgeMaxDebounced] = useState(99)
 
   useEffect(() => {
     api.getGames().then(data => setGames(data.games))
   }, [])
+
+  useEffect(() => {
+    clearTimeout(ageTimer.current)
+    ageTimer.current = setTimeout(() => {
+      setAgeMinDebounced(filterAgeMin)
+      setAgeMaxDebounced(filterAgeMax)
+    }, 400)
+    return () => clearTimeout(ageTimer.current)
+  }, [filterAgeMin, filterAgeMax])
 
   useEffect(() => {
     setLoading(true)
@@ -39,13 +51,13 @@ export default function Discover({ user }: Props) {
       selectedGame,
       filterGender || undefined,
       filterRegion || undefined,
-      filterAgeMin || undefined,
-      filterAgeMax < 99 ? filterAgeMax : undefined,
+      ageMinDebounced || undefined,
+      ageMaxDebounced < 99 ? ageMaxDebounced : undefined,
     ).then(data => {
       setCandidates(data.candidates)
       setLoading(false)
     }).catch(() => setLoading(false))
-  }, [selectedGame, filterGender, filterRegion, filterAgeMin, filterAgeMax])
+  }, [selectedGame, filterGender, filterRegion, ageMinDebounced, ageMaxDebounced])
 
   const current = candidates[currentIdx]
   const hasMore = currentIdx < candidates.length - 1

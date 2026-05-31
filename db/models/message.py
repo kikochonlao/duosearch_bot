@@ -10,8 +10,8 @@ class Message(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
 
-    match_id: Mapped[int] = mapped_column(ForeignKey("matches.id"), nullable=False)
-    from_user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    match_id: Mapped[int] = mapped_column(ForeignKey("matches.id"), nullable=False, index=True)
+    from_user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
     from_telegram_id: Mapped[int] = mapped_column(BigInteger, nullable=False)
     text: Mapped[str] = mapped_column(Text, nullable=False)
 

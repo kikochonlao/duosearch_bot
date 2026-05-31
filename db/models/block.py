@@ -8,8 +8,8 @@ class Block(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
 
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
-    blocked_user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    blocked_user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
 
     __table_args__ = (
         UniqueConstraint("user_id", "blocked_user_id"),

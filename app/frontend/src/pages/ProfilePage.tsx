@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Settings, Pencil, MapPin, Languages, Gamepad2 } from 'lucide-react'
 import { api, Profile, GameInfo, SteamGame } from '../api/client'
 import { impact } from '../utils/haptic'
+import { tgAlert, tgConfirm } from '../utils/telegram'
 
 interface Props {
   user: { telegram_id: number; username: string | null; is_registered: boolean } | null
@@ -39,20 +40,20 @@ export default function ProfilePage({ user }: Props) {
       setShowSteamInput(false)
       setSteamInput('')
       if (res.imported && res.imported.length > 0) {
-        alert(`Imported ${res.imported.length} games: ${res.imported.map(g => g.name).join(', ')}`)
+        await tgAlert(`Imported ${res.imported.length} games: ${res.imported.map(g => g.name).join(', ')}`)
       }
       const sg = await api.getSteamGames()
       setSteamGames(sg.games)
-    } catch (e: any) { alert(e.message) }
+    } catch (e: any) { await tgAlert(e.message) }
   }
 
   const handleDisconnectSteam = async () => {
-    if (!confirm('Disconnect Steam account?')) return
+    if (!(await tgConfirm('Disconnect Steam account?'))) return
     try {
       await api.disconnectSteam()
       setProfile(prev => prev ? { ...prev, steam_id: null } : prev)
       setSteamGames([])
-    } catch (e: any) { alert(e.message) }
+    } catch (e: any) { await tgAlert(e.message) }
   }
 
   const handleImportSteam = async () => {
@@ -61,13 +62,13 @@ export default function ProfilePage({ user }: Props) {
       const res = await api.importSteamGames()
       if (res.imported.length > 0) {
         setProfile(prev => prev ? { ...prev, games: res.games } : prev)
-        alert(`Imported ${res.imported.length} games: ${res.imported.map(g => g.name).join(', ')}`)
+        await tgAlert(`Imported ${res.imported.length} games: ${res.imported.map(g => g.name).join(', ')}`)
       } else if (res.message) {
-        alert(res.message)
+        await tgAlert(res.message)
       } else {
-        alert('No new games to import (already added or none matched)')
+        await tgAlert('No new games to import (already added or none matched)')
       }
-    } catch (e: any) { alert(e.message) }
+    } catch (e: any) { await tgAlert(e.message) }
   }
 
   if (loading) {

@@ -10,8 +10,8 @@ class Like(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
 
-    from_user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
-    to_user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    from_user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    to_user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
     game: Mapped[str] = mapped_column(String, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 

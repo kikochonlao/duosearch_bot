@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { FileText, Save } from 'lucide-react'
 import { api, Profile, GameInfo } from '../api/client'
 import { impact } from '../utils/haptic'
+import { tgAlert } from '../utils/telegram'
 
 const LANGUAGES = [
   { key: 'ru', label: 'Русский', flag: '🇷🇺' },
@@ -109,7 +110,7 @@ export default function EditProfile({ user }: Props) {
         games: buildGamesPayload(),
       })
       navigate('/profile')
-    } catch (e: any) { alert(e.message) }
+    } catch (e: any) { await tgAlert(e.message) }
     finally { setSaving(false) }
   }
 

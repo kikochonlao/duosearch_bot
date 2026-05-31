@@ -10,10 +10,10 @@ class ChatSession(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
 
-    user1_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
-    user2_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    user1_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    user2_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
 
-    match_id: Mapped[int] = mapped_column(ForeignKey("matches.id"))
+    match_id: Mapped[int] = mapped_column(ForeignKey("matches.id"), index=True)
 
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 

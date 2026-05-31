@@ -3,6 +3,7 @@ import { Routes, Route, useNavigate, useLocation } from 'react-router-dom'
 import { Compass, Gamepad2, Heart, MessageCircle, User } from 'lucide-react'
 import { api } from './api/client'
 import { impact } from './utils/haptic'
+import ErrorBoundary from './components/ErrorBoundary'
 import Welcome from './pages/Welcome'
 import Register from './pages/Register'
 import Discover from './pages/Discover'
@@ -137,6 +138,7 @@ export default function App() {
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--background)', color: 'var(--foreground)', paddingTop: safeTop }}>
+      <ErrorBoundary>
       <Routes>
         <Route path="/welcome" element={<Welcome user={user} />} />
         <Route path="/register" element={<Register user={user} onRegistered={() => {
@@ -158,6 +160,7 @@ export default function App() {
         <Route path="/duo/:matchId" element={<DuoJourney />} />
         <Route path="*" element={<Welcome user={user} />} />
       </Routes>
+      </ErrorBoundary>
 
       {user?.is_registered && !location.pathname.startsWith('/chat/') && !location.pathname.startsWith('/match/') && !location.pathname.startsWith('/lobbies/') && (
         <nav style={{

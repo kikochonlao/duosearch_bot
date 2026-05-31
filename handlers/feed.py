@@ -7,6 +7,7 @@ from aiogram.exceptions import TelegramBadRequest
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.repositories.like_repo import LikeRepository
+from utils.constants import esc as _esc
 
 router = Router()
 logger = logging.getLogger("duosearch.feed")
@@ -23,7 +24,7 @@ async def myfeed_command(message: Message, session: AsyncSession, state: FSMCont
     # Delete user's command message to avoid chat spam
     try:
         await message.delete()
-    except:
+    except Exception:
         pass
     
     from services.user_service import get_user
@@ -479,8 +480,7 @@ def _build_candidate_multi_kb(u, game: str, idx: int, total: int, games: list[st
     return kb
 
 
-def _esc(text: str) -> str:
-    return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
 
 
 
