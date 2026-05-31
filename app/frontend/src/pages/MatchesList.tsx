@@ -119,14 +119,17 @@ export default function MatchesList({ user }: Props) {
                 <MessageCircle size={12} /> Active
               </span>
             )}
-            <span onClick={e => { e.stopPropagation(); navigate(`/duo/${m.id}`) }}
+            <button onClick={e => { e.stopPropagation(); navigate(`/duo/${m.id}`) }}
               style={{
-                borderRadius: 8, background: 'rgba(197,84,212,0.12)',
-                color: 'var(--primary)', padding: '2px 8px', fontSize: 11, fontWeight: 500,
-                whiteSpace: 'nowrap', cursor: 'pointer',
-              }}>
-              <Sparkles size={12} /> Duo
-            </span>
+                borderRadius: 10, background: 'linear-gradient(135deg, var(--primary), var(--accent))',
+                color: '#fff', padding: '6px 14px', fontSize: 13, fontWeight: 600,
+                border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5,
+                whiteSpace: 'nowrap', transition: 'transform 0.15s, opacity 0.15s',
+              }}
+              onMouseOver={e => e.currentTarget.style.opacity = '0.85'}
+              onMouseOut={e => e.currentTarget.style.opacity = '1'}>
+              <Sparkles size={14} /> Duo
+            </button>
           </div>
         </div>
       ))}
