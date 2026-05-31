@@ -1,4 +1,4 @@
-const tg = (window as any).Telegram?.WebApp
+const tg = window.Telegram?.WebApp
 
 export function impact(style: 'light' | 'medium' | 'heavy' | 'rigid' | 'soft' = 'medium') {
   tg?.HapticFeedback?.impactOccurred(style)

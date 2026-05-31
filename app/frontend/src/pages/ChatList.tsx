@@ -57,9 +57,9 @@ export default function ChatList({ user }: Props) {
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: 18, fontWeight: 600, color: '#fff',
           }}>
-            {(s.other_user as any).photo_url ? (
-              <img src={(s.other_user as any).photo_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; (e.currentTarget.parentElement!.innerText = s.other_user.name[0].toUpperCase()) }} />
+            {s.other_user.photo_url ? (
+              <img src={s.other_user.photo_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                onError={e => { const t = e.currentTarget; t.style.display = 'none'; t.parentElement!.innerText = s.other_user.name[0].toUpperCase() }} />
             ) : s.other_user.name[0].toUpperCase()}
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>

@@ -1,4 +1,4 @@
-const API_BASE = '/api'
+const API_BASE = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_BASE) || '/api'
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const tg = window.Telegram?.WebApp

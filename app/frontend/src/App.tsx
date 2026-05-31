@@ -70,6 +70,11 @@ export default function App() {
     tg?.requestFullscreen?.()
     setTimeout(updateSafe, 600)
     tg?.onEvent?.('fullscreenChanged', updateSafe)
+    return () => tg?.offEvent?.('fullscreenChanged', updateSafe)
+  }, [])
+
+  useEffect(() => {
+    const tg = window.Telegram?.WebApp
     if (tg?.initData) {
       api.login(tg.initData).then(data => {
         setUser(data)

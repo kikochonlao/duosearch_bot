@@ -20,7 +20,7 @@ declare global {
           hide: () => void
           onClick: (cb: () => void) => void
         }
-        HapticFeedback: { impactOccurred: (style: string) => void }
+        HapticFeedback: { impactOccurred: (style: string) => void; notificationOccurred: (type: string) => void; selectionChanged: () => void }
         themeParams: {
           bg_color?: string
           text_color?: string

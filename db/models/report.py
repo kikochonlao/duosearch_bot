@@ -1,8 +1,8 @@
-from sqlalchemy import ForeignKey, UniqueConstraint, String, DateTime
+from datetime import datetime
+
+from sqlalchemy import DateTime, ForeignKey, UniqueConstraint, String, func
 from sqlalchemy.orm import Mapped, mapped_column
 from db.base import Base
-from datetime import datetime
-from sqlalchemy import func
 
 
 class Report(Base):
@@ -15,5 +15,5 @@ class Report(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
     __table_args__ = (
-        UniqueConstraint("reporter_id", "reported_user_id", "created_at"),
+        UniqueConstraint("reporter_id", "reported_user_id"),
     )

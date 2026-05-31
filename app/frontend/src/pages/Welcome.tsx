@@ -81,8 +81,8 @@ export default function Welcome({ user }: Props) {
           <button onClick={() => navigate('/register')} className="btn-primary" style={{ padding: 16 }}>
             Get Started
           </button>
-          <button onClick={() => navigate('/register')} className="btn-secondary" style={{ padding: 16 }}>
-            Log In
+          <button onClick={() => navigate('/discover')} className="btn-secondary" style={{ padding: 16 }}>
+            Already registered? Go to app
           </button>
         </div>
       </div>
