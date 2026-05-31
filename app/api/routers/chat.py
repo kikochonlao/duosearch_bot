@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, or_, desc
+from sqlalchemy import select, or_, and_, desc, update
 
 from app.api.deps.auth import get_telegram_user, resolve_telegram_id
 from app.api.deps.db import get_session
@@ -102,8 +102,44 @@ async def get_messages(
             from_telegram_id=m.from_telegram_id,
             text=m.text,
             created_at=m.created_at,
+            read_at=m.read_at,
         ) for m in messages
     ]
+
+
+@router.post("/{match_id}/read")
+async def mark_read(
+    match_id: int,
+    auth: dict = Depends(get_telegram_user),
+    session: AsyncSession = Depends(get_session),
+):
+    telegram_id = await resolve_telegram_id(auth)
+    if not telegram_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No telegram_id")
+
+    me = await session.execute(select(User).where(User.telegram_id == telegram_id))
+    me_user = me.scalar_one_or_none()
+    if not me_user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    match = await session.get(Match, match_id)
+    if not match:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Match not found")
+
+    if match.user1_id != me_user.id and match.user2_id != me_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not your match")
+
+    await session.execute(
+        update(Message).where(
+            and_(
+                Message.match_id == match_id,
+                Message.from_user_id != me_user.id,
+                Message.read_at.is_(None),
+            )
+        ).values(read_at=func.now())
+    )
+    await session.commit()
+    return {"ok": True}
 
 
 @router.post("/{match_id}/messages", response_model=MessageOut)
@@ -149,4 +185,5 @@ async def send_message(
         from_telegram_id=msg.from_telegram_id,
         text=msg.text,
         created_at=msg.created_at,
+        read_at=msg.read_at,
     )

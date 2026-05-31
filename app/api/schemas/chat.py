@@ -8,6 +8,7 @@ class MessageOut(BaseModel):
     from_telegram_id: int
     text: str
     created_at: datetime
+    read_at: Optional[datetime] = None
 
 
 class MessageSend(BaseModel):

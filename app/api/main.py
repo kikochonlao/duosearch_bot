@@ -29,6 +29,7 @@ async def lifespan(app: FastAPI):
                 "ALTER TABLE users ADD COLUMN IF NOT EXISTS photo_url VARCHAR",
                 "ALTER TABLE users ADD COLUMN IF NOT EXISTS steam_id VARCHAR",
                 "ALTER TABLE users ADD COLUMN IF NOT EXISTS blog TEXT",
+                "ALTER TABLE messages ADD COLUMN IF NOT EXISTS read_at TIMESTAMP",
             ]:
                 try:
                     await conn.execute(text(stmt))

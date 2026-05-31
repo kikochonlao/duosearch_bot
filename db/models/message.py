@@ -1,8 +1,8 @@
-from sqlalchemy import ForeignKey, BigInteger, Text
+from typing import Optional
+from sqlalchemy import ForeignKey, BigInteger, Text, DateTime, func
 from sqlalchemy.orm import Mapped, mapped_column
 from db.base import Base
 from datetime import datetime
-from sqlalchemy import DateTime, func
 
 
 class Message(Base):
@@ -16,3 +16,4 @@ class Message(Base):
     text: Mapped[str] = mapped_column(Text, nullable=False)
 
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    read_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)

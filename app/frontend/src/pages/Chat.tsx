@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Ban, AlertTriangle, ArrowUp } from 'lucide-react'
+import { Ban, AlertTriangle, ArrowUp, Check, CheckCheck, Sparkles } from 'lucide-react'
 import { api, MessageItem, MatchItem } from '../api/client'
 import { impact } from '../utils/haptic'
 
@@ -52,6 +52,15 @@ export default function Chat({ user }: Props) {
     return () => clearInterval(interval)
   }, [matchId, messages.length])
 
+  useEffect(() => {
+    if (!matchId || !messages.length) return
+    const mid = parseInt(matchId)
+    const hasUnread = messages.some(m => m.from_telegram_id !== user?.telegram_id && !m.read_at)
+    if (hasUnread) {
+      api.markAsRead(mid).catch(() => {})
+    }
+  }, [matchId, messages, user?.telegram_id])
+
   const handleBlock = async () => {
     if (!matchInfo) return
     const targetId = matchInfo.matched_user.telegram_id
@@ -97,7 +106,8 @@ export default function Chat({ user }: Props) {
     borderBottom: '1px solid var(--tg-border)',
   }
 
-  const otherName = matchInfo?.matched_user.name || 'Chat'
+  const partner = matchInfo?.matched_user
+  const otherName = partner?.name || 'Chat'
   const myTgId = user?.telegram_id
 
   return (
@@ -108,7 +118,17 @@ export default function Chat({ user }: Props) {
       }}>
         <div onClick={() => matchInfo && navigate(`/user/${matchInfo.matched_user.telegram_id}`, { state: { profile: matchInfo.matched_user } })}
           style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', flex: 1 }}>
-          <div className="avatar sm">{otherName[0]}</div>
+          <div style={{
+            width: 40, height: 40, borderRadius: '50%', overflow: 'hidden',
+            background: 'linear-gradient(135deg, var(--primary), var(--accent))',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 16, fontWeight: 600, color: '#fff', flexShrink: 0,
+          }}>
+            {partner?.photo_url ? (
+              <img src={partner.photo_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; (e.currentTarget.parentElement!.innerText = otherName[0]) }} />
+            ) : otherName[0]}
+          </div>
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 600, fontSize: 15 }}>{otherName}</div>
             <div style={{ color: 'var(--tg-hint)', fontSize: 12 }}>Online</div>
@@ -126,6 +146,10 @@ export default function Chat({ user }: Props) {
               border: '1px solid var(--tg-border)', overflow: 'hidden',
               minWidth: 160, boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
             }}>
+              {matchInfo && (
+                <button onClick={() => { setShowMenu(false); navigate(`/duo/${matchInfo.id}`) }}
+                  style={menuItemStyle}><Sparkles size={16} /> Duo Journey</button>
+              )}
               <button onClick={handleBlock} style={menuItemStyle}><Ban size={16} /> Block user</button>
               <button onClick={handleReport} style={menuItemStyle}><AlertTriangle size={16} /> Report user</button>
             </div>
@@ -141,6 +165,7 @@ export default function Chat({ user }: Props) {
         )}
         {messages.map(msg => {
           const isMine = myTgId && msg.from_telegram_id === myTgId
+          const isRead = !!msg.read_at
           return (
             <div key={msg.id} style={{
               display: 'flex', justifyContent: isMine ? 'flex-end' : 'flex-start',
@@ -156,9 +181,13 @@ export default function Chat({ user }: Props) {
               }}>
                 {msg.text}
                 <div style={{
-                  fontSize: 10, opacity: 0.6, marginTop: 4, textAlign: 'right',
+                  display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 3,
+                  fontSize: 10, opacity: 0.6, marginTop: 4,
                 }}>
-                  {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  <span>{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                  {isMine && (
+                    isRead ? <CheckCheck size={14} style={{ color: 'var(--blue)' }} /> : <Check size={14} />
+                  )}
                 </div>
               </div>
             </div>

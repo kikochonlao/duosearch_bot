@@ -96,6 +96,7 @@ export interface MessageItem {
   from_telegram_id: number
   text: string
   created_at: string
+  read_at: string | null
 }
 
 export interface ChatSessionInfo {
@@ -261,6 +262,9 @@ export const api = {
 
   sendMessage: (matchId: number, text: string) =>
     request<MessageItem>(`/chat/${matchId}/messages`, { method: 'POST', body: JSON.stringify({ text }), headers: { 'Content-Type': 'application/json' } }),
+
+  markAsRead: (matchId: number) =>
+    request<{ ok: boolean }>(`/chat/${matchId}/read`, { method: 'POST' }),
 
   getGames: () =>
     request<{ games: GameInfo[] }>('/games/'),
