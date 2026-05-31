@@ -35,7 +35,7 @@ class LikeRepository:
             select(Like).where(
                 Like.from_user_id == from_user.id,
                 Like.to_user_id == to_user.id,
-            )
+            ).with_for_update()
         )
         if existing.scalar_one_or_none():
             return False, None, None
@@ -48,7 +48,7 @@ class LikeRepository:
             select(Like).where(
                 Like.from_user_id == to_user.id,
                 Like.to_user_id == from_user.id,
-            )
+            ).with_for_update()
         )
         is_mutual = existing_mutual.scalar_one_or_none() is not None
 

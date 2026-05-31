@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, desc
+from sqlalchemy import select, and_, desc, func
 import json
 import logging
 
@@ -92,19 +92,19 @@ async def _check_achievements(session: AsyncSession, rel: DuoRelationship):
         if key == "first_match":
             unlocked = True
         elif key == "first_message":
-            msg_count = await session.scalar(select(Message.id).where(
+            count = await session.scalar(select(func.count(Message.id)).where(
                 Message.match_id == rel.match_id
-            ).limit(1))
-            unlocked = msg_count is not None
+            ))
+            unlocked = count is not None and count >= 1
         elif key == "ten_messages":
-            count = await session.scalar(select(Message.id).where(Message.match_id == rel.match_id).limit(10))
-            unlocked = count is not None
+            count = await session.scalar(select(func.count(Message.id)).where(Message.match_id == rel.match_id))
+            unlocked = count is not None and count >= 10
         elif key == "fifty_messages":
-            count = await session.scalar(select(Message.id).where(Message.match_id == rel.match_id).limit(50))
-            unlocked = count is not None
+            count = await session.scalar(select(func.count(Message.id)).where(Message.match_id == rel.match_id))
+            unlocked = count is not None and count >= 50
         elif key == "hundred_messages":
-            count = await session.scalar(select(Message.id).where(Message.match_id == rel.match_id).limit(100))
-            unlocked = count is not None
+            count = await session.scalar(select(func.count(Message.id)).where(Message.match_id == rel.match_id))
+            unlocked = count is not None and count >= 100
         elif key == "soulmates":
             unlocked = rel.level >= 7
 

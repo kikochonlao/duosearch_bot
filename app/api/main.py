@@ -62,7 +62,7 @@ app = FastAPI(title="Duosearch Mini App", version="1.0.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["https://frontend-ivory-nine-61.vercel.app", "https://duosearch-bot.vercel.app", "https://duosearch-bot.pages.dev"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

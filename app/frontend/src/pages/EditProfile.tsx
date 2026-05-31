@@ -61,7 +61,7 @@ export default function EditProfile({ user }: Props) {
       setGameRanks(ranks)
       setGameRoles(roles)
       setRoleRanks(perRole)
-    })
+    }).catch(() => setError('Failed to load profile'))
   }, [])
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {

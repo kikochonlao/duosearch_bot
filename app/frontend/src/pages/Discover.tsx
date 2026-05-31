@@ -380,7 +380,7 @@ export default function Discover({ user }: Props) {
              onMouseUp={e => (e.currentTarget.style.transform = '')}>
             <X size={28} />
           </button>
-          <button style={{
+          <button onClick={handleLike} style={{
             width: 48, height: 48, borderRadius: '50%',
             border: '2px solid var(--cyan)',
             background: 'rgba(95,200,221,0.1)',

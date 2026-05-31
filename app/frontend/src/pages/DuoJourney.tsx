@@ -23,14 +23,11 @@ export default function DuoJourney() {
 
   useEffect(() => {
     if (!matchId) return
-    api.getDuoStatus(Number(matchId)).then(s => setStatus(s))
-    api.getAchievements(Number(matchId)).then(a => setAchievements(a))
-    api.getMemories(Number(matchId)).then(m => setMemories(m))
     Promise.all([
-      api.getDuoStatus(Number(matchId)),
-      api.getAchievements(Number(matchId)),
-      api.getMemories(Number(matchId)),
-    ]).then(() => setLoading(false)).catch(() => setTimeout(() => setLoading(false), 2000))
+      api.getDuoStatus(Number(matchId)).then(s => setStatus(s)),
+      api.getAchievements(Number(matchId)).then(a => setAchievements(a)),
+      api.getMemories(Number(matchId)).then(m => setMemories(m)),
+    ]).then(() => setLoading(false)).catch(() => setLoading(false))
   }, [matchId])
 
   if (loading) {

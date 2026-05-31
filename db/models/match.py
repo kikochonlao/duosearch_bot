@@ -14,3 +14,7 @@ class Match(Base):
     user2_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
 
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+
+    __table_args__ = (
+        UniqueConstraint("user1_id", "user2_id", name="uq_match_users"),
+    )

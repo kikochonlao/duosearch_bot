@@ -5,8 +5,8 @@ from db.models.user import User as DBUser
 from db.models.match import Match
 from db.models.like import Like
 from db.models.block import Block
+from db.models.skip import Skip
 from db.mappers import db_to_domain, db_list_to_domain
-from db.repositories.like_repo import LikeRepository
 from core.models.user import User
 
 
@@ -27,44 +27,52 @@ class FeedRepository:
     async def get_candidates(self, telegram_id: int, game: str = '',
                               gender: str = '', region: str = '',
                               age_min: int = 0, age_max: int = 99) -> list[User]:
-        result = await self.session.execute(select(DBUser))
-        all_users = result.scalars().all()
-
-        like_repo = LikeRepository(self.session)
-        interacted_ids = await like_repo.get_interacted_ids(telegram_id)
-
         me = await self.session.execute(
             select(DBUser).where(DBUser.telegram_id == telegram_id)
         )
         me_user = me.scalar_one_or_none()
-        my_db_id = me_user.id if me_user else 0
+        if not me_user:
+            return []
 
-        blocks_result = await self.session.execute(
-            select(Block.blocked_user_id).where(Block.user_id == my_db_id)
+        interacted_ids = await self.session.execute(
+            select(Like.to_user_id).where(Like.from_user_id == me_user.id)
         )
-        blocked_ids = {r[0] for r in blocks_result.fetchall()}
+        liked = {r[0] for r in interacted_ids.fetchall()}
 
-        candidates = []
-        for u in all_users:
-            if u.telegram_id == telegram_id:
-                continue
-            if u.is_banned:
-                continue
-            if u.id in interacted_ids:
-                continue
-            if u.id in blocked_ids:
-                continue
-            if game and game not in u.get_games():
-                continue
-            if gender and u.gender != gender:
-                continue
-            if region and u.region != region:
-                continue
-            if u.age < age_min or u.age > age_max:
-                continue
-            candidates.append(u)
+        skipped = await self.session.execute(
+            select(Skip.to_user_id).where(Skip.from_user_id == me_user.id)
+        )
+        liked.update(r[0] for r in skipped.fetchall())
 
-        return db_list_to_domain(candidates)
+        blocked = await self.session.execute(
+            select(Block.blocked_user_id).where(Block.user_id == me_user.id)
+        )
+        liked.update(r[0] for r in blocked.fetchall())
+
+        blocked_by = await self.session.execute(
+            select(Block.user_id).where(Block.blocked_user_id == me_user.id)
+        )
+        liked.update(r[0] for r in blocked_by.fetchall())
+
+        query = select(DBUser).where(
+            DBUser.telegram_id != telegram_id,
+            DBUser.is_banned == 0,
+        )
+        if liked:
+            query = query.where(~DBUser.id.in_(liked))
+        if game:
+            query = query.where(DBUser.games.like(f'%"{game}"%'))
+        if gender:
+            query = query.where(DBUser.gender == gender)
+        if region:
+            query = query.where(DBUser.region == region)
+        if age_min:
+            query = query.where(DBUser.age >= age_min)
+        if age_max < 99:
+            query = query.where(DBUser.age <= age_max)
+
+        result = await self.session.execute(query)
+        return db_list_to_domain(result.scalars().all())
 
     async def get_matches(self, telegram_id: int) -> list[User]:
         me = await self.session.execute(
