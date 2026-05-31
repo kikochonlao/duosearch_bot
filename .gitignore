@@ -13,3 +13,4 @@ build/
 node_modules/
 bot.log
 *.log
+test_init_data.py
