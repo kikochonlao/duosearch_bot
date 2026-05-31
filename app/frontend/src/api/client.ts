@@ -102,7 +102,7 @@ export interface MessageItem {
 export interface ChatSessionInfo {
   id: number
   match_id: number
-  other_user: { id: number; telegram_id: number; name: string }
+  other_user: { id: number; telegram_id: number; name: string; photo_url?: string | null }
   is_active: boolean
   created_at: string
   last_message?: string

@@ -23,16 +23,14 @@ export default function DuoJourney() {
 
   useEffect(() => {
     if (!matchId) return
+    api.getDuoStatus(Number(matchId)).then(s => setStatus(s))
+    api.getAchievements(Number(matchId)).then(a => setAchievements(a))
+    api.getMemories(Number(matchId)).then(m => setMemories(m))
     Promise.all([
       api.getDuoStatus(Number(matchId)),
       api.getAchievements(Number(matchId)),
       api.getMemories(Number(matchId)),
-    ]).then(([s, a, m]) => {
-      setStatus(s)
-      setAchievements(a)
-      setMemories(m)
-      setLoading(false)
-    }).catch(() => setLoading(false))
+    ]).then(() => setLoading(false)).catch(() => setTimeout(() => setLoading(false), 2000))
   }, [matchId])
 
   if (loading) {
@@ -138,7 +136,11 @@ export default function DuoJourney() {
                       <span style={{ fontWeight: 600, fontSize: 14 }}>{m.title}</span>
                       <span style={{ fontSize: 11, color: 'var(--muted-foreground)' }}>{m.created_at ? new Date(m.created_at).toLocaleDateString() : ''}</span>
                     </div>
-                    {m.description && <p style={{ fontSize: 13, color: 'var(--muted-foreground)', marginBottom: 4 }}>{m.description}</p>}
+                    {(() => {
+                      let desc = m.description || ''
+                      try { const parsed = JSON.parse(desc); desc = parsed.title || parsed.description || desc } catch {}
+                      return desc ? <p style={{ fontSize: 13, color: 'var(--muted-foreground)', marginBottom: 4 }}>{desc}</p> : null
+                    })()}
                     <span style={{ fontSize: 11, color: rarityColor(m.rarity) }}>+{m.xp_earned} XP</span>
                   </div>
                 </div>

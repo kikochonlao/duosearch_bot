@@ -8,11 +8,7 @@ interface Props {
   user: { telegram_id: number; username: string | null; is_registered: boolean } | null
 }
 
-const GAME_EMOJIS: Record<string, string> = {
-  lol: '🏰', cs2: '🔫', dota2: '⚔️', overwatch: '🎯', valorant: '🔫',
-  pubg: '🪂', apex: '⚡', fortnite: '🏗️', minecraft: '⛏️', rust: '🔧',
-  rocket_league: '🚗', wow: '🐉',
-}
+
 
 export default function UserProfile({ user }: Props) {
   const { telegramId } = useParams()
@@ -169,7 +165,6 @@ export default function UserProfile({ user }: Props) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {Object.entries(profileGames).map(([gk, gp]) => {
             const gi = displayGames.find(g => g.key === gk)
-            const emoji = GAME_EMOJIS[gk] || '🎮'
             const hasRoles = Object.keys(gp.roles || {}).length > 0
             return (
               <div key={gk} style={{
@@ -177,7 +172,11 @@ export default function UserProfile({ user }: Props) {
                 background: 'var(--card)', border: '1px solid var(--border)',
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <span style={{ fontSize: 28 }}>{emoji}</span>
+                  {gi?.icon ? (
+                    <img src={gi.icon} alt="" style={{ width: 28, height: 28 }} />
+                  ) : (
+                    <div style={{ width: 28, height: 28, borderRadius: 6, background: 'rgba(197,84,212,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>🎮</div>
+                  )}
                   <div style={{ flex: 1 }}>
                     <div style={{ fontWeight: 600, fontSize: 15 }}>{gi?.display || gk}</div>
                     {gp.rank && (

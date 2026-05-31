@@ -57,6 +57,7 @@ async def get_chat_sessions(
                 "id": other.id,
                 "telegram_id": other.telegram_id,
                 "name": other.name,
+                "photo_url": other.photo_url,
             },
             is_active=cs.is_active,
             created_at=cs.created_at,

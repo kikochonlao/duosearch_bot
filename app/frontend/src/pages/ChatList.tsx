@@ -51,8 +51,16 @@ export default function ChatList({ user }: Props) {
       {sessions.map(s => (
         <div key={s.id} className="list-item" onClick={() => navigate(`/chat/${s.match_id}`)}
           style={{ opacity: s.is_active ? 1 : 0.5 }}>
-          <div className="avatar">
-            {s.other_user.name[0].toUpperCase()}
+          <div style={{
+            width: 48, height: 48, borderRadius: '50%', overflow: 'hidden', flexShrink: 0,
+            background: 'linear-gradient(135deg, var(--primary), var(--accent))',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 18, fontWeight: 600, color: '#fff',
+          }}>
+            {(s.other_user as any).photo_url ? (
+              <img src={(s.other_user as any).photo_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; (e.currentTarget.parentElement!.innerText = s.other_user.name[0].toUpperCase()) }} />
+            ) : s.other_user.name[0].toUpperCase()}
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontWeight: 600 }}>{s.other_user.name}</div>
