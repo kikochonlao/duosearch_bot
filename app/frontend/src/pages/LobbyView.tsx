@@ -27,7 +27,7 @@ export default function LobbyView({ user }: Props) {
 
   const id = Number(lobbyId)
 
-  useEffect(() => { api.getGames().then(data => setGames(data.games)) }, [])
+  useEffect(() => { api.getGames().then(data => setGames(data.games)).catch(() => {}) }, [])
 
   const loadLobby = () => {
     api.getLobby(id).then(setLobby).catch(() => setError('Lobby not found'))
@@ -76,26 +76,34 @@ export default function LobbyView({ user }: Props) {
 
   const handleLeave = async () => {
     impact('medium')
-    await api.leaveLobby(id)
-    navigate('/lobbies')
+    try {
+      await api.leaveLobby(id)
+      navigate('/lobbies')
+    } catch (e: any) { setError(e.message || 'Failed to leave') }
   }
 
   const handleClose = async () => {
     impact('medium')
-    await api.closeLobby(id)
-    loadLobby()
+    try {
+      await api.closeLobby(id)
+      loadLobby()
+    } catch (e: any) { setError(e.message || 'Failed to close') }
   }
 
   const handleApprove = async (userId: number) => {
     impact('light')
-    await api.approveMember(id, userId)
-    loadLobby()
+    try {
+      await api.approveMember(id, userId)
+      loadLobby()
+    } catch (e: any) { setError(e.message || 'Failed to approve') }
   }
 
   const handleKick = async (userId: number) => {
     impact('light')
-    await api.kickMember(id, userId)
-    loadLobby()
+    try {
+      await api.kickMember(id, userId)
+      loadLobby()
+    } catch (e: any) { setError(e.message || 'Failed to kick') }
   }
 
   if (loading) {

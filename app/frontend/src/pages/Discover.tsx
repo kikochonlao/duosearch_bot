@@ -32,7 +32,7 @@ export default function Discover({ user }: Props) {
   const [ageMaxDebounced, setAgeMaxDebounced] = useState(99)
 
   useEffect(() => {
-    api.getGames().then(data => setGames(data.games))
+    api.getGames().then(data => setGames(data.games)).catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -79,9 +79,13 @@ export default function Discover({ user }: Props) {
     } catch { setAnimClass('') }
   }
 
-  const handleSkip = () => {
+  const handleSkip = async () => {
+    if (!current) return
     impact('light')
     setAnimClass('fadeIn')
+    try {
+      await api.skipUser(current.user.telegram_id)
+    } catch {}
     setTimeout(() => {
       hasMore ? setCurrentIdx(i => i + 1) : setCandidates([])
       setAnimClass('')

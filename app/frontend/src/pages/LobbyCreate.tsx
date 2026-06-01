@@ -24,7 +24,7 @@ export default function LobbyCreate({ user }: Props) {
     api.getGames().then(data => {
       setGames(data.games)
       if (data.games.length > 0) setGame(data.games[0].key)
-    })
+    }).catch(() => setError('Failed to load games'))
   }, [])
 
   const handleCreate = async () => {
@@ -68,7 +68,7 @@ export default function LobbyCreate({ user }: Props) {
       {/* Game preview photo */}
       <div style={{
         width: '100%', height: 140, borderRadius: 14, marginBottom: 16,
-        background: game ? (GAME_GRADIENTS[game] || 'linear-gradient(135deg, var(--primary), var(--pink))') : 'var(--secondary)',
+        background: game ? (getGameGradient(game) || 'linear-gradient(135deg, var(--primary), var(--pink))') : 'var(--secondary)',
         display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 8,
         boxShadow: game ? '0 4px 20px rgba(0,0,0,0.25)' : 'none',
         transition: 'all 0.3s',

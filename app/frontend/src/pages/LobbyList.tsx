@@ -19,7 +19,7 @@ export default function LobbyList({ user }: Props) {
   const debounceRef = useRef<ReturnType<typeof setTimeout>>()
 
   useEffect(() => {
-    api.getGames().then(data => setGames(data.games))
+    api.getGames().then(data => setGames(data.games)).catch(() => {})
   }, [])
 
   const fetchLobbies = (game: string, q: string) => {

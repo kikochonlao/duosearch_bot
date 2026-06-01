@@ -1,6 +1,7 @@
 import hashlib
 import hmac
 import json
+import time
 from urllib.parse import parse_qs
 
 from fastapi import Header, HTTPException, status
@@ -15,6 +16,14 @@ def verify_telegram_init_data(init_data: str) -> dict[str, str]:
     received_hash = data.pop("hash", None)
     if not received_hash:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing hash")
+
+    auth_date = data.get("auth_date")
+    if auth_date:
+        try:
+            if time.time() - int(auth_date) > 86400:
+                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Init data expired")
+        except ValueError:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid auth_date")
 
     items = sorted(data.items())
     data_check_string = "\n".join(f"{k}={v}" for k, v in items)

@@ -6,8 +6,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi import Request
+from fastapi.responses import JSONResponse
 
 from app.api.routers import auth, profile, discover, matches, chat, games, lobbies, duo
+from middlewares.rate_limit import RateLimiter
 
 _bot_task: asyncio.Task | None = None
 
@@ -67,6 +70,18 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+EXCLUDED_PATHS = {"/api/health", "/api/bot-status", "/api/migrate"}
+_limiter = RateLimiter()
+
+@app.middleware("http")
+async def rate_limit_middleware(request: Request, call_next):
+    if request.url.path not in EXCLUDED_PATHS:
+        try:
+            await _limiter(request)
+        except Exception:
+            return JSONResponse(status_code=429, content={"detail": "Too many requests"})
+    return await call_next(request)
 
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(profile.router, prefix="/api/profile", tags=["profile"])

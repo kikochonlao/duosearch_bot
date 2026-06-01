@@ -47,7 +47,7 @@ export default function Register({ user, onRegistered }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    api.getGames().then(data => setGamesData(data.games))
+    api.getGames().then(data => setGamesData(data.games)).catch(() => setError('Failed to load games'))
   }, [])
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
